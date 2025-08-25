@@ -37,5 +37,7 @@ def armijo_goldstein(res: Callable[[npt.NDArray,Tuple[Any]],npt.NDArray], beta: 
         else: 
             step_length /= 2
 
+    print("Warning: The armijio_goldstein subroutine reached maximum iteration bound before principle was satisfied!")
+    #TODO: Maybe also do this with a success flag, since this was a pain in the back with gauss newton
     return step_length
 
