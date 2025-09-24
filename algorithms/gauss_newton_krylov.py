@@ -26,12 +26,12 @@ class Krylov:
     base: npt.NDArray
     active_columns: int
     _res: Callable[[npt.NDArray,Tuple[Any]],npt.NDArray]
-    _jac: Callable[[npt.NDArray,Tuple[Any]],Union[npt.NDArray,sp.spmatrix,sp.sparray]]
+    _jac: Callable[[npt.NDArray,Tuple[Any]],npt.NDArray]
     krylov_max_dim: int
     res_ev: npt.NDArray
     restart: bool
 
-    def __init__(self, _res: Callable[[npt.NDArray,Tuple[Any]],npt.NDArray], x0: npt.NDArray, _jac: Callable[[npt.NDArray,Tuple[Any]],Tuple[npt.NDArray,sp.spmatrix,sp.sparray]], krylov_max_dim: int, restart: bool, *args):
+    def __init__(self, _res: Callable[[npt.NDArray,Tuple[Any]],npt.NDArray], x0: npt.NDArray, _jac: Callable[[npt.NDArray,Tuple[Any]],npt.NDArray], krylov_max_dim: int, restart: bool, *args):
 
         if np.allclose(x0,np.zeros_like(x0)):
             raise ValueError("x0 is not allowed to be 0 in the gauss_newton_krylov algorithm")
@@ -68,10 +68,6 @@ class Krylov:
 
         self.jac_ev = self._jac(self.base[:,:self.active_columns]@x_coordinate, *args)
         #normal_res = self.jac_ev.T@res_ev
-        if self.active_columns == self.krylov_max_dim and not self.restart:
-            print("Hi")
-            return x_coordinate
-
         normal_res = self.jac_ev.T@self.res(x_coordinate,*args)
 
         normal_res -= self.base[:,:self.active_columns]@(self.base[:,:self.active_columns].T@normal_res)
@@ -79,10 +75,9 @@ class Krylov:
         if np.allclose(normal_res,np.zeros_like(normal_res)):
             return x_coordinate
 
-
         normal_res /= np.linalg.norm(normal_res)
 
-        if self.active_columns == self.krylov_max_dim and self.restart:
+        if self.active_columns == self.krylov_max_dim:# and self.restart:
             x0=self.x(x_coordinate)
             x_coordinate = np.array([np.linalg.norm(x0)])
             self.base = np.zeros((len(normal_res),self.krylov_max_dim))
@@ -144,9 +139,9 @@ def gauss_newton_krylov(
 
     for iter in range(max_iter):
 
-        jac_ev: npt.NDArray = krylov.jac() 
+        jac_ev: npt.NDArray = krylov.jac() #I'm operating under the assumption that the krylov base will typically be dense
 
-        descent_direction, _, rank_jac, _ = scipy.linalg.lstsq(-1*jac_ev, res_ev) #I'm operating under the assumption that the krylov base will typically be dense
+        descent_direction, _, rank_jac, _ = scipy.linalg.lstsq(-1*jac_ev, res_ev)
 
         step_length, res_ev, nfev_delta = armijo_goldstein(krylov.res, x_coordinate, res_ev, jac_ev, args, descent_direction)
         nfev += nfev_delta
