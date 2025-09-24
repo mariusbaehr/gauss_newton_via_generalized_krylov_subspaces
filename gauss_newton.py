@@ -9,7 +9,7 @@ import scipy.sparse as sp
 import scipy
 
 
-def gauss_newton(res: Callable[[npt.NDArray,Tuple[Any]],npt.NDArray], x0: npt.NDArray, jac: Callable[[npt.NDArray,Tuple[Any]],Union[npt.NDArray, sp.spmatrix]], args: Tuple = (), tol: float=1E-8, max_iter=100, step_length_control: Callable = armijo_goldstein, callback: Callable=lambda : None) -> RegressionResult : 
+def gauss_newton(res: Callable[[npt.NDArray,Tuple[Any]],npt.NDArray], x0: npt.NDArray, jac: Callable[[npt.NDArray,Tuple[Any]],Union[npt.NDArray, sp.spmatrix, sp.sparray]], args: Tuple = (), tol: float=1E-8, max_iter=100, step_length_control: Callable = armijo_goldstein, callback: Callable=lambda : None) -> RegressionResult : 
     """
     Gauss Newton algorithm for minimizing ||res(theta)|| with respect to theta.
 
@@ -45,7 +45,7 @@ def gauss_newton(res: Callable[[npt.NDArray,Tuple[Any]],npt.NDArray], x0: npt.ND
 
         #res_ev is updated in step_length control
         jac_ev: Union[npt.NDArray,sp.spmatrix] = jac(x,*args) 
-        is_sparse: bool = isinstance(jac_ev,(sp.sparray,sp.spmatrix)) #TODO are there other sp types?
+        is_sparse: bool = isinstance(jac_ev,(sp.sparray,sp.spmatrix))
 
         if is_sparse:
             descent_direction, _, lsqr_iter, *_ = scipy.sparse.linalg.lsqr(-1*jac_ev, res_ev)

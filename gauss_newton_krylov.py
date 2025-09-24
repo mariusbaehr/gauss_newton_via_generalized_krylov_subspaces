@@ -15,8 +15,13 @@ class Krylov:
 
     Attributes
     ----------
-
-
+    base:
+    active_columns:
+    _res:
+    _jac:
+    krylov_max_dim:
+    res_ev: 
+    restart:
     """
     base: npt.NDArray
     active_columns: int
@@ -56,11 +61,9 @@ class Krylov:
     def jac(self) -> npt.NDArray:
         return self.jac_ev@self.base[:,:self.active_columns]
 
-    def update(self,x_coordinate,res_ev,*args)->npt.NDArray:
+    def update(self,x_coordinate: npt.NDArray, res_ev: npt.NDArray, *args: Tuple[Any])->npt.NDArray:
         """
         Because the dimensions may change x_coordinate is also updatet in size.
-
-
         """
 
         self.jac_ev = self._jac(self.base[:,:self.active_columns]@x_coordinate, *args)
@@ -95,32 +98,27 @@ class Krylov:
 def gauss_newton_krylov(
         res: Callable[[npt.NDArray,Tuple[Any]],npt.NDArray], 
         x0: npt.NDArray, 
-        jac: Callable[[npt.NDArray,Tuple[Any]],npt.NDArray],
+        jac: Callable[[npt.NDArray,Tuple[Any]],Union[npt.NDArray,sp.spmatrix,sp.sparray]],
         krylov_restart: int | None = None,
         args: Tuple = (),
         tol: float=1E-8,
         max_iter=100,
         callback: Callable=lambda : None)->RegressionResult:
     """
-
-
     Parameters
     ----------
-
     res: The residual function, called as res(x, *args) the argument x and its return must always be ndarrays.
     x0: Initial guess of the regression parameters.
     jac: Called as jac(x,d, *args), should return either a NDArray or a spmatrix, if returned a spmatrix a sparse solver is used to solve the linearised equation.
-    krylov_restart: 
-    args: 
-    tol:
-    max_iter: 
-    callback: Called as callback with the following possible positional arguments: x, iter, jac, rank_jac, step_length
-
+    krylov_restart: If the krylov_base gets larger than krylov_restart the base is reset, if left to None base never resets.
+    args: Additional arguments passed to res and jac.
+    tol: Tolerance for termination by the change of the paramters x.
+    max_iter: Maximum number of iterations.
+    callback: Called as callback with the following possible positional arguments: x, iter, jac, rank_jac, step_length, nfev. Implementet arguments are automaticaly determined by call_callback.
 
     Returns
     -------
-    res: RegressionResult
-    
+    res: Returns instance of RegressionResult.
     """
 
     success: bool = False
@@ -141,16 +139,12 @@ def gauss_newton_krylov(
 
     for iter in range(max_iter):
 
-        #res_ev: npt.NDArray = krylov.res(x_coordinate,*args)
-        #jac_ev: npt.NDArray = krylov.jac(x_coordinate,*args) 
-        jac_ev: npt.NDArray = krylov.jac()
-        #Currently I'm operating under the assumption that the krylov base will typically be dense
+        jac_ev: npt.NDArray = krylov.jac() #I'm operating under the assumption that the krylov base will typically be dense
 
         descent_direction, _, rank_jac, _ = scipy.linalg.lstsq(-1*jac_ev, res_ev)
 
         step_length, res_ev, nfev_delta = armijo_goldstein(krylov.res, x_coordinate, res_ev, jac_ev, args, descent_direction)
         nfev += nfev_delta
-
 
         squared_sum_x_prev = np.sum(x_coordinate**2)
         
@@ -166,6 +160,4 @@ def gauss_newton_krylov(
 
     if not success: print("Warning: The gauss_newton_krylov algorithm reached maximal iteration bound before terminating!")
 
-
     return RegressionResult("gauss newton krylov", krylov.x(x_coordinate), success, nfev, iter, None, iter)
-
