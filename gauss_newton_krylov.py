@@ -69,7 +69,7 @@ class Krylov:
         self.jac_ev = self._jac(self.base[:,:self.active_columns]@x_coordinate, *args)
         #normal_res = self.jac_ev.T@res_ev
         if self.active_columns == self.krylov_max_dim and not self.restart:
-            print("Hi")
+            print(f"krylov_max_dim reached, activ_colums= {self.active_columns}")
             return x_coordinate
 
         normal_res = self.jac_ev.T@self.res(x_coordinate,*args)
