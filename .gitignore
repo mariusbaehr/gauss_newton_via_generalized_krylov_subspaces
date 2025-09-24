@@ -1,0 +1,14 @@
+*.aux
+*.log
+*.out
+*.toc
+*.pdf
+*.bcf
+*.nav
+*.snm
+*.run
+*.blg
+*.bbl
+*.cls
+*.djv
+*.pyc

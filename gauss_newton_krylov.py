@@ -1,0 +1,171 @@
+from collections.abc import Callable
+from typing import Union, Any, Tuple 
+from regression_result import RegressionResult
+from armijo_goldstein import armijo_goldstein
+from call_callback import call_callback
+import numpy as np
+import numpy.typing as npt
+import scipy.sparse as sp
+import scipy
+
+
+class Krylov:
+    """
+    The goal of this class is to outsource all the additional complexity from gauss_newton_krylov. To be close to the implementation of gauss_newton.
+
+    Attributes
+    ----------
+
+
+    """
+    base: npt.NDArray
+    active_columns: int
+    _res: Callable[[npt.NDArray,Tuple[Any]],npt.NDArray]
+    _jac: Callable[[npt.NDArray,Tuple[Any]],npt.NDArray]
+    krylov_max_dim: int
+    res_ev: npt.NDArray
+    restart: bool
+
+    def __init__(self, _res: Callable[[npt.NDArray,Tuple[Any]],npt.NDArray], x0: npt.NDArray, _jac: Callable[[npt.NDArray,Tuple[Any]],npt.NDArray], krylov_max_dim: int, restart: bool, *args):
+
+        if np.allclose(x0,np.zeros_like(x0)):
+            raise ValueError("x0 is not allowed to be 0 in the gauss_newton_krylov algorithm")
+
+        self._res = _res
+        self._jac = _jac
+        self.active_columns = 1
+        self.krylov_max_dim = krylov_max_dim
+        self.restart = restart
+
+        self.base = np.zeros((len(x0),self.krylov_max_dim))
+        self.base[:,0] = x0/np.linalg.norm(x0)
+
+        self.jac_ev = self._jac(self.base[:,:self.active_columns]@np.array([np.linalg.norm(x0)]), *args)
+
+    def x(self,x_coordinate:npt.NDArray):
+        return self.base[:,:self.active_columns]@x_coordinate
+
+    def res(self, x_coordinate: npt.NDArray, *args:Any) -> npt.NDArray:
+        return self._res(self.base[:,:self.active_columns]@x_coordinate, *args)
+
+    #def jac(self, x_coordinate: npt.NDArray, *args:Any) -> npt.NDArray: 
+    #    jac_ev = self._jac(self.base[:,:self.active_columns]@x_coordinate, *args)
+    #    self.normal_res = jac_ev.T@self.res_ev
+    #    return jac_ev@self.base[:,:self.active_columns]
+
+    def jac(self) -> npt.NDArray:
+        return self.jac_ev@self.base[:,:self.active_columns]
+
+    def update(self,x_coordinate,res_ev,*args)->npt.NDArray:
+        """
+        Because the dimensions may change x_coordinate is also updatet in size.
+
+
+        """
+
+        self.jac_ev = self._jac(self.base[:,:self.active_columns]@x_coordinate, *args)
+        #normal_res = self.jac_ev.T@res_ev
+        normal_res = self.jac_ev.T@self.res(x_coordinate,*args)
+
+        normal_res -= self.base[:,:self.active_columns]@(self.base[:,:self.active_columns].T@normal_res)
+
+        if np.allclose(normal_res,np.zeros_like(normal_res)):
+            return x_coordinate
+
+        normal_res /= np.linalg.norm(normal_res)
+
+        if self.active_columns == self.krylov_max_dim:# and self.restart:
+            x0=self.x(x_coordinate)
+            x_coordinate = np.array([np.linalg.norm(x0)])
+            self.base = np.zeros((len(normal_res),self.krylov_max_dim))
+            self.base[:,0] = x0/x_coordinate[0]
+            self.active_columns = 1
+            #TODO: Seperate the krylov update and the restart formular
+            #TODO: If no restart was set, just continue
+        else:
+
+            self.base[:,self.active_columns] = normal_res
+            self.active_columns +=1
+            x_coordinate = np.block([x_coordinate,np.zeros(1)])
+        
+        return x_coordinate
+
+
+
+def gauss_newton_krylov(
+        res: Callable[[npt.NDArray,Tuple[Any]],npt.NDArray], 
+        x0: npt.NDArray, 
+        jac: Callable[[npt.NDArray,Tuple[Any]],npt.NDArray],
+        krylov_restart: int | None = None,
+        args: Tuple = (),
+        tol: float=1E-8,
+        max_iter=100,
+        callback: Callable=lambda : None)->RegressionResult:
+    """
+
+
+    Parameters
+    ----------
+
+    res: The residual function, called as res(x, *args) the argument x and its return must always be ndarrays.
+    x0: Initial guess of the regression parameters.
+    jac: Called as jac(x,d, *args), should return either a NDArray or a spmatrix, if returned a spmatrix a sparse solver is used to solve the linearised equation.
+    krylov_restart: 
+    args: 
+    tol:
+    max_iter: 
+    callback: Called as callback with the following possible positional arguments: x, iter, jac, rank_jac, step_length
+
+
+    Returns
+    -------
+    res: RegressionResult
+    
+    """
+
+    success: bool = False
+    rank_jac: int | None = None
+
+    restart: bool = True
+    if krylov_restart == None:
+        krylov_restart = max_iter
+        restart = False
+
+    krylov_max_dim: int = min(max_iter, krylov_restart, len(x0))
+    x_coordinate = np.array([np.linalg.norm(x0)])
+
+    krylov = Krylov(res, x0.copy(), jac, krylov_max_dim,restart, *args)
+
+    res_ev: npt.NDArray = krylov.res(x_coordinate,*args)
+    nfev: int = 1
+
+    for iter in range(max_iter):
+
+        #res_ev: npt.NDArray = krylov.res(x_coordinate,*args)
+        #jac_ev: npt.NDArray = krylov.jac(x_coordinate,*args) 
+        jac_ev: npt.NDArray = krylov.jac()
+        #Currently I'm operating under the assumption that the krylov base will typically be dense
+
+        descent_direction, _, rank_jac, _ = scipy.linalg.lstsq(-1*jac_ev, res_ev)
+
+        step_length, res_ev, nfev_delta = armijo_goldstein(krylov.res, x_coordinate, res_ev, jac_ev, args, descent_direction)
+        nfev += nfev_delta
+
+
+        squared_sum_x_prev = np.sum(x_coordinate**2)
+        
+        x_coordinate += step_length*descent_direction
+
+        call_callback(callback, **{"x":krylov.x(x_coordinate),"iter":iter, "jac":jac, "rank_jac": rank_jac, "step_length":step_length, "nfev":nfev})
+
+        if step_length**2*np.sum(descent_direction**2) <= tol**2*squared_sum_x_prev:
+            success = True
+            break
+
+        x_coordinate = krylov.update(x_coordinate,res_ev, *args)
+
+    if not success: print("Warning: The gauss_newton_krylov algorithm reached maximal iteration bound before terminating!")
+
+
+    return RegressionResult("gauss newton krylov", krylov.x(x_coordinate), success, nfev, iter, None, iter)
+
