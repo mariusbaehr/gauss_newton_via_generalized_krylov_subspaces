@@ -3,7 +3,7 @@ import scipy.sparse
 from benchmark import benchmark
 
 
-p = 200 # N=2p-2, again not a classical regression model, however 
+p = 100 # N=2p-2, again not a classical regression model, however 
 def res(x):
     block1 = 10*(x[1:]-x[:-1]**2)
     block2 = 1-x[:-1]
