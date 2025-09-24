@@ -69,7 +69,8 @@ class Krylov:
         self.jac_ev = self._jac(self.base[:,:self.active_columns]@x_coordinate, *args)
         #normal_res = self.jac_ev.T@res_ev
         if self.active_columns == self.krylov_max_dim and not self.restart:
-            print(f"krylov_max_dim reached, activ_colums= {self.active_columns}")
+            print("Warning: gauss_newton_krylov algorithm reached krylov_max_dim. Further iterations are equivalent to the standart gauss_newton algorithm but much slower.")
+            print(self.base.shape)
             return x_coordinate
 
         normal_res = self.jac_ev.T@self.res(x_coordinate,*args)
