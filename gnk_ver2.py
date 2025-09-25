@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from typing import Union, Any, Tuple 
+from typing import Union, Any, Tuple
 from regression_result import RegressionResult
 from armijo_goldstein import armijo_goldstein
 from call_callback import call_callback
@@ -8,15 +8,19 @@ import numpy.typing as npt
 import scipy.sparse as sp
 import scipy
 
+
 def gauss_newton_krylov(
-        res: Callable[[npt.NDArray,Tuple[Any]],npt.NDArray], 
-        x0: npt.NDArray, 
-        jac: Callable[[npt.NDArray,Tuple[Any]],Union[npt.NDArray,sp.spmatrix,sp.sparray]],
-        krylov_restart: int | None = None,
-        args: Tuple = (),
-        tol: float=1E-8,
-        max_iter=100,
-        callback: Callable=lambda : None)->RegressionResult:
+    res: Callable[[npt.NDArray, Tuple[Any]], npt.NDArray],
+    x0: npt.NDArray,
+    jac: Callable[
+        [npt.NDArray, Tuple[Any]], Union[npt.NDArray, sp.spmatrix, sp.sparray]
+    ],
+    krylov_restart: int | None = None,
+    args: Tuple = (),
+    tol: float = 1e-8,
+    max_iter=100,
+    callback: Callable = lambda: None,
+) -> RegressionResult:
     """
     Parameters
     ----------
@@ -33,11 +37,11 @@ def gauss_newton_krylov(
     res: Returns instance of RegressionResult.
     """
 
-    if np.allclose(x0,np.zeros_like(x0)):
-        raise ValueError("x0 is not allowed to be 0 in the gauss_newton_krylov algorithm")
+    if np.allclose(x0, np.zeros_like(x0)):
+        raise ValueError(
+            "x0 is not allowed to be 0 in the gauss_newton_krylov algorithm"
+        )
 
     success: bool = False
     rank_jac: int | None = None
     krylov_max_dim: int = min(max_iter, krylov_restart, len(x0))
-
-

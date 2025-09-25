@@ -2,7 +2,8 @@ import inspect
 from collections.abc import Callable
 from typing import Any
 
-def call_callback(callback: Callable, **kwargs: dict[str,Any]):
+
+def call_callback(callback: Callable, **kwargs: dict[str, Any]):
     """
     For more flexibility with the callback only parameters wich are defined are passed to the callback.
     So e.g. instead of defining the callback for every possible argument, it ist now possible to define it solely for those of interest.
