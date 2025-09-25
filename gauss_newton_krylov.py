@@ -76,6 +76,7 @@ class Krylov:
     #    return jac_ev@self.base[:,:self.active_columns]
 
     def jac(self) -> npt.NDArray:
+        # Die Krylov auswertung wird so versteckt !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         return self.jac_ev @ self.base[:, : self.active_columns]
 
     def update(
@@ -85,11 +86,14 @@ class Krylov:
         Because the dimensions may change x_coordinate is also updatet in size.
         """
 
-        # np.testing.assert_allclose(self.base[:,:self.active_columns].T @ self.base[:,:self.active_columns], np.eye(self.active_columns), atol=1E-8, err_msg=f"first violation = {self.active_columns}")
+        np.testing.assert_allclose(self.base[:,:self.active_columns].T @ self.base[:,:self.active_columns], np.eye(self.active_columns), atol=1E-8, rtol=0, err_msg=f"first violation = {self.active_columns}")
 
         self.jac_ev = self._jac(
             self.base[:, : self.active_columns] @ x_coordinate, *args
         )
+
+        print(self.base[:,:self.active_columns].T @ self.base[:,:self.active_columns])
+
         normal_res = self.jac_ev.T @ res_ev
         if self.active_columns == self.krylov_max_dim and not self.restart:
             print(
@@ -100,7 +104,6 @@ class Krylov:
 
             return x_coordinate
 
-        normal_res = self.jac_ev.T @ res_ev
 
         normal_res -= self.base[:, : self.active_columns] @ (
             self.base[:, : self.active_columns].T @ normal_res
