@@ -9,9 +9,9 @@ import scipy.sparse as sp
 import scipy
 
 
-class Krylov:
+class Krylow:
     """
-    The goal of this class is to outsource all the additional complexity from gauss_newton_krylov. To be close to the implementation of gauss_newton.
+    The goal of this class is to outsource all the additional complexity from gauss_newton_krylow. To be close to the implementation of gauss_newton.
 
     Attributes
     ----------
@@ -19,7 +19,7 @@ class Krylov:
     active_columns:
     _res:
     _jac:
-    krylov_max_dim:
+    krylow_max_dim:
     res_ev:
     restart:
     """
@@ -28,9 +28,9 @@ class Krylov:
     active_columns: int
     _res: Callable[[npt.NDArray, Tuple[Any]], npt.NDArray]
     _jac: Callable[
-        [npt.NDArray, Tuple[Any]], Union[npt.NDArray, sp.spmatrix, sp.sparray]
+        [npt.NDArray, Tuple[Any]], Union[npt.NDArray, sp.spmatrix]
     ]
-    krylov_max_dim: int
+    krylow_max_dim: int
     res_ev: npt.NDArray
     restart: bool
 
@@ -39,25 +39,25 @@ class Krylov:
         _res: Callable[[npt.NDArray, Tuple[Any]], npt.NDArray],
         x0: npt.NDArray,
         _jac: Callable[
-            [npt.NDArray, Tuple[Any]], Tuple[npt.NDArray, sp.spmatrix, sp.sparray]
+            [npt.NDArray, Tuple[Any]], Tuple[npt.NDArray, sp.spmatrix]
         ],
-        krylov_max_dim: int,
+        krylow_max_dim: int,
         restart: bool,
         *args
     ):
 
         if np.allclose(x0, np.zeros_like(x0)):
             raise ValueError(
-                "x0 is not allowed to be 0 in the gauss_newton_krylov algorithm"
+                "x0 is not allowed to be 0 in the gauss_newton_krylow algorithm"
             )
 
         self._res = _res
         self._jac = _jac
         self.active_columns = 1
-        self.krylov_max_dim = krylov_max_dim
+        self.krylow_max_dim = krylow_max_dim
         self.restart = restart
 
-        self.base = np.zeros((len(x0), self.krylov_max_dim))
+        self.base = np.zeros((len(x0), self.krylow_max_dim))
         self.base[:, 0] = x0 / np.linalg.norm(x0)
 
         self.jac_ev = self._jac(
@@ -76,7 +76,7 @@ class Krylov:
     #    return jac_ev@self.base[:,:self.active_columns]
 
     def jac(self) -> npt.NDArray:
-        # Die Krylov auswertung wird so versteckt !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        # Die Krylow auswertung wird so versteckt !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         return self.jac_ev @ self.base[:, : self.active_columns]
 
     def update(
@@ -95,9 +95,9 @@ class Krylov:
         #print(self.base[:,:self.active_columns].T @ self.base[:,:self.active_columns])
 
         normal_res = self.jac_ev.T @ res_ev
-        if self.active_columns == self.krylov_max_dim and not self.restart:
+        if self.active_columns == self.krylow_max_dim and not self.restart:
             print(
-                "Warning: gauss_newton_krylov algorithm reached krylov_max_dim. Further iterations are equivalent to the standart gauss_newton algorithm but much slower."
+                "Warning: gauss_newton_krylow algorithm reached krylow_max_dim. Further iterations are equivalent to the standart gauss_newton algorithm but much slower."
             )
 
             # np.testing.assert_allclose(self.base.T @ self.base, np.eye(len(self.base)))
@@ -114,13 +114,12 @@ class Krylov:
 
         normal_res /= np.linalg.norm(normal_res)
 
-        if self.active_columns == self.krylov_max_dim and self.restart:
+        if self.active_columns == self.krylow_max_dim and self.restart:
             x0 = self.x(x_coordinate)
             x_coordinate = np.array([np.linalg.norm(x0)])
-            self.base = np.zeros((len(normal_res), self.krylov_max_dim))
+            self.base = np.zeros((len(normal_res), self.krylow_max_dim))
             self.base[:, 0] = x0 / x_coordinate[0]
             self.active_columns = 1
-            # TODO: Seperate the krylov update and the restart formular (But now its weird)
         else:
 
             self.base[:, self.active_columns] = normal_res
@@ -130,13 +129,13 @@ class Krylov:
         return x_coordinate
 
 
-def gauss_newton_krylov(
+def gauss_newton_krylow(
     res: Callable[[npt.NDArray, Tuple[Any]], npt.NDArray],
     x0: npt.NDArray,
     jac: Callable[
-        [npt.NDArray, Tuple[Any]], Union[npt.NDArray, sp.spmatrix, sp.sparray]
+        [npt.NDArray, Tuple[Any]], Union[npt.NDArray, sp.spmatrix]
     ],
-    krylov_restart: int | None = None,
+    krylow_restart: int | None = None,
     args: Tuple = (),
     tol: float = 1e-8,
     max_iter=100,
@@ -147,8 +146,8 @@ def gauss_newton_krylov(
     ----------
     res: The residual function, called as res(x, *args) the argument x and its return must always be ndarrays.
     x0: Initial guess of the regression parameters.
-    jac: Called as jac(x,d, *args), should return either a NDArray or a spmatrix, if returned a spmatrix a sparse solver is used to solve the linearised equation.
-    krylov_restart: If the krylov_base gets larger than krylov_restart the base is reset, if left to None base never resets.
+    jac: 
+    krylow_restart: If the krylow_base gets larger than krylow_restart the base is reset, if left to None base never resets.
     args: Additional arguments passed to res and jac.
     tol: Tolerance for termination by the change of the paramters x.
     max_iter: Maximum number of iterations.
@@ -162,28 +161,28 @@ def gauss_newton_krylov(
     success: bool = False
 
     restart: bool = True
-    if krylov_restart == None:
-        krylov_restart = max_iter
+    if krylow_restart == None:
+        krylow_restart = max_iter
         restart = False
 
-    krylov_max_dim: int = min(max_iter, krylov_restart, len(x0))
+    krylow_max_dim: int = min(max_iter, krylow_restart, len(x0))
     x_coordinate = np.array([np.linalg.norm(x0)])
 
-    krylov = Krylov(res, x0.copy(), jac, krylov_max_dim, restart, *args)
+    krylow = Krylow(res, x0.copy(), jac, krylow_max_dim, restart, *args)
 
-    res_ev: npt.NDArray = krylov.res(x_coordinate, *args)
+    res_ev: npt.NDArray = krylow.res(x_coordinate, *args)
     nfev: int = 1
 
     for iter in range(max_iter):
 
-        jac_ev: npt.NDArray = krylov.jac()
+        jac_ev: npt.NDArray = krylow.jac()
 
         descent_direction, _, _, _ = scipy.linalg.lstsq(
             -1 * jac_ev, res_ev 
         )
 
         step_length, res_ev, nfev_delta = armijo_goldstein(
-            krylov.res, x_coordinate, res_ev, jac_ev, args, descent_direction
+            krylow.res, x_coordinate, res_ev, jac_ev, args, descent_direction
         )
         print(step_length)
         nfev += nfev_delta
@@ -195,7 +194,7 @@ def gauss_newton_krylov(
         call_callback(
             callback,
             **{
-                "x": krylov.x(x_coordinate),
+                "x": krylow.x(x_coordinate),
                 "iter": iter,
                 "jac": jac,
                 "step_length": step_length,
@@ -207,13 +206,13 @@ def gauss_newton_krylov(
             success = True
             break
 
-        x_coordinate = krylov.update(x_coordinate, res_ev, *args)
+        x_coordinate = krylow.update(x_coordinate, res_ev, *args)
 
     if not success:
         print(
-            "Warning: The gauss_newton_krylov algorithm reached maximal iteration bound before terminating!"
+            "Warning: The gauss_newton_krylow algorithm reached maximal iteration bound before terminating!"
         )
 
     return RegressionResult(
-        "gauss newton krylov", krylov.x(x_coordinate), success, nfev, iter, None, iter
+        "gauss newton krylow", krylow.x(x_coordinate), success, nfev, iter, None, iter
     )

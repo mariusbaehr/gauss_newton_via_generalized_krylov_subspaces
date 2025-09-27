@@ -13,7 +13,7 @@ def gauss_newton(
     res: Callable[[npt.NDArray, Tuple[Any]], npt.NDArray],
     x0: npt.NDArray,
     jac: Callable[
-        [npt.NDArray, Tuple[Any]], Union[npt.NDArray, sp.spmatrix, sp.sparray]
+        [npt.NDArray, Tuple[Any]], Union[npt.NDArray, sp.spmatrix]
     ],
     args: Tuple = (),
     tol: float = 1e-8,
@@ -59,12 +59,11 @@ def gauss_newton(
 
         if is_sparse:
             descent_direction, _, lsqr_iter, *_ = scipy.sparse.linalg.lsqr(
-                -1 * jac_ev, res_ev
+                -1.0 * jac_ev, res_ev
             )
         else:
             descent_direction, _, _, _ = scipy.linalg.lstsq(-1 * jac_ev, res_ev)
 
-        # TODO: Also the nrev used
         step_length, res_ev, nfev_delta = step_length_control(
             res, x, res_ev, jac_ev, args, descent_direction
         )

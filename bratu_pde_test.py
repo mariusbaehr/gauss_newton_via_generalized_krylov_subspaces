@@ -4,13 +4,13 @@ import sympy as sp
 from benchmark import benchmark
 
 n = 100  # Notice N=P=(n-1)*(n-1)
-# Not actually a regression problem with gaussian noise, because N=P. However at least the linear case a2=0 might be interesting for checking if the generalized krylov subspaces are correct implemented.
+# Not actually a regression problem with gaussian noise, because N=P. However at least the linear case a2=0 might be interesting for checking if the generalized krylow subspaces are correct implemented.
 a1 = 5
 a2 = 10
 
 a = -3
 b = 3
-h = 1  # (b-a)/n #Note the scaling was omitted in "An effective implementation of Gauss Newton via generalized Krylov subspaces"
+h = 1  # (b-a)/n #Note the scaling was omitted in "An effective implementation of Gauss Newton via generalized Krylow subspaces"
 
 
 def u(x1, x2):

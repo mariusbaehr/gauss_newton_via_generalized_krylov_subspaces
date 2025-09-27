@@ -1,7 +1,7 @@
 from typing import List, Union
 import numpy.typing as npt
 import scipy.sparse as sp
-from gauss_newton_krylov import Krylov
+from gauss_newton_krylow import Krylow
 
 class Secant:
     """
@@ -15,14 +15,14 @@ class Secant:
     delta_res: List[npt.NDArray] # maybe store this in a matrice
     delta_x: List[npt.NDArray]
     secant_update: int
-    krylov: Union[None,Krylov]
+    krylow: Union[None,Krylow]
 
-    def __init__(self, jac: Union[npt.NDArray, sp.spmatrix], delta_res: List[npt.NDArray], delta_x: List[npt.NDArray], secant_update: int, krylov: Union[None,Krylov]):
+    def __init__(self, jac: Union[npt.NDArray, sp.spmatrix], delta_res: List[npt.NDArray], delta_x: List[npt.NDArray], secant_update: int, krylow: Union[None,Krylow]):
         self.jac = jac
         self.delta_res = delta_res
         self.delta_x = delta_x
         self.secant_update = secant_update
-        self.krylov= krylov
+        self.krylow= krylow
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!
 

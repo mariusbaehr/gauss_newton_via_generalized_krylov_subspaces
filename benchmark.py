@@ -3,7 +3,7 @@ import scipy.optimize
 import matplotlib.pyplot as plt
 import numpy as np
 from gauss_newton import gauss_newton
-from gauss_newton_krylov import gauss_newton_krylov
+from gauss_newton_krylow import gauss_newton_krylow
 
 
 def benchmark(res, x0, jac, error, kwargs={}, additional_methods=[], title=None):
@@ -45,11 +45,11 @@ def benchmark(res, x0, jac, error, kwargs={}, additional_methods=[], title=None)
         return scipy.optimize.least_squares(res, x0, jac, callback=callback)
 
     def gnk(callback):
-        return gauss_newton_krylov(res, x0, jac, callback=callback, **kwargs)
+        return gauss_newton_krylow(res, x0, jac, callback=callback, **kwargs)
 
     def gnk_restart(callback):
-        return gauss_newton_krylov(
-            res, x0, jac, callback=callback, krylov_restart=20, **kwargs
+        return gauss_newton_krylow(
+            res, x0, jac, callback=callback, krylow_restart=20, **kwargs
         )
 
     methods = [ref_method, gnk, gnk_restart, gn] + additional_methods
