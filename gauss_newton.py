@@ -46,9 +46,6 @@ def gauss_newton(
     x: npt.NDArray = x0.copy()
     success: bool = False
 
-    rank_jac: int | None = (
-        None  # rank of jacobian might be interesting to inspect, but is only available for dense solver
-    )
     lsqr_iter: int | None = None
 
     res_ev: npt.NDArray = res(x, *args)
@@ -65,7 +62,7 @@ def gauss_newton(
                 -1 * jac_ev, res_ev
             )
         else:
-            descent_direction, _, rank_jac, _ = scipy.linalg.lstsq(-1 * jac_ev, res_ev)
+            descent_direction, _, _, _ = scipy.linalg.lstsq(-1 * jac_ev, res_ev)
 
         # TODO: Also the nrev used
         step_length, res_ev, nfev_delta = step_length_control(
@@ -83,7 +80,6 @@ def gauss_newton(
                 "x": x,
                 "iter": iter,
                 "jac": jac,
-                "rank_jac": rank_jac,
                 "step_length": step_length,
                 "nfev": nfev,
                 "lsqr_iter": lsqr_iter,

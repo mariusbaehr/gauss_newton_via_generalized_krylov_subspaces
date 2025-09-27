@@ -160,7 +160,6 @@ def gauss_newton_krylov(
     """
 
     success: bool = False
-    rank_jac: int | None = None
 
     restart: bool = True
     if krylov_restart == None:
@@ -179,9 +178,9 @@ def gauss_newton_krylov(
 
         jac_ev: npt.NDArray = krylov.jac()
 
-        descent_direction, _, rank_jac, _ = scipy.linalg.lstsq(
+        descent_direction, _, _, _ = scipy.linalg.lstsq(
             -1 * jac_ev, res_ev 
-        )  # I'm operating under the assumption that the krylov base will typically be dense
+        )
 
         step_length, res_ev, nfev_delta = armijo_goldstein(
             krylov.res, x_coordinate, res_ev, jac_ev, args, descent_direction
@@ -199,7 +198,6 @@ def gauss_newton_krylov(
                 "x": krylov.x(x_coordinate),
                 "iter": iter,
                 "jac": jac,
-                "rank_jac": rank_jac,
                 "step_length": step_length,
                 "nfev": nfev,
             }
