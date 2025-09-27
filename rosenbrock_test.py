@@ -30,7 +30,7 @@ x_exact = np.ones(p)
 def error(x):
     return np.linalg.norm(x - x_exact)
 
-
-benchmark(res, x0, jac, error, {"max_iter": 500}, title="rosenbrock")
+if __name__ == '__main__':
+    benchmark(res, x0, jac, error, {"max_iter": 500}, title="rosenbrock")
 
 # TODO: plot the step length, I guess they are set to 1 when the error goes down

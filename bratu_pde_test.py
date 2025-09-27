@@ -74,9 +74,10 @@ def ref_cg(callback):
     return cg
 
 
-benchmark(
-    res, x0, jac, error, {"max_iter": 300, "tol": 1e-12}, title="bratu_pde"
-)  # ,additional_methods=[ref_cg])
+if __name__ == '__main__':
+    benchmark(
+        res, x0, jac, error, {"max_iter": 300, "tol": 1e-12}, title="bratu_pde"
+    )  # ,additional_methods=[ref_cg])
 
 # print(f"condition number of A.T@A {np.linalg.cond( ((A_h2+a1*D_x1).T@(A_h2+a1*D_x1)).todense())}")
 # print(f"norm of A.T@A {np.linalg.norm(((A_h2+a1*D_x1).T@(A_h2+a1*D_x1)).todense(),2)}")
