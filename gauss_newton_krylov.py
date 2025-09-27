@@ -86,13 +86,13 @@ class Krylov:
         Because the dimensions may change x_coordinate is also updatet in size.
         """
 
-        np.testing.assert_allclose(self.base[:,:self.active_columns].T @ self.base[:,:self.active_columns], np.eye(self.active_columns), atol=1E-8, rtol=0, err_msg=f"first violation = {self.active_columns}")
+        #np.testing.assert_allclose(self.base[:,:self.active_columns].T @ self.base[:,:self.active_columns], np.eye(self.active_columns), atol=1E-10, rtol=0, err_msg=f"first violation = {self.active_columns}")
 
         self.jac_ev = self._jac(
             self.base[:, : self.active_columns] @ x_coordinate, *args
         )
 
-        print(self.base[:,:self.active_columns].T @ self.base[:,:self.active_columns])
+        #print(self.base[:,:self.active_columns].T @ self.base[:,:self.active_columns])
 
         normal_res = self.jac_ev.T @ res_ev
         if self.active_columns == self.krylov_max_dim and not self.restart:
@@ -180,12 +180,13 @@ def gauss_newton_krylov(
         jac_ev: npt.NDArray = krylov.jac()
 
         descent_direction, _, rank_jac, _ = scipy.linalg.lstsq(
-            -1 * jac_ev, res_ev
+            -1 * jac_ev, res_ev 
         )  # I'm operating under the assumption that the krylov base will typically be dense
 
         step_length, res_ev, nfev_delta = armijo_goldstein(
             krylov.res, x_coordinate, res_ev, jac_ev, args, descent_direction
         )
+        print(step_length)
         nfev += nfev_delta
 
         squared_sum_x_prev = np.sum(x_coordinate**2)

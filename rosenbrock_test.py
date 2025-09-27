@@ -13,7 +13,7 @@ def res(x):
 
 
 x0 = np.zeros(p)
-x0[0] = 1  # Because zero is not allowed in gauss_newton_krylov
+x0[0] = 1.5  # Because zero is not allowed in gauss_newton_krylov
 
 
 def jac(x):

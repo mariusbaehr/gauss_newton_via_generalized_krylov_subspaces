@@ -48,7 +48,7 @@ def res(x):
 # x0 = np.zeros_like(x_true)
 # x0[1] = 1
 # x0= A_h2.T@y_true+a1*D_x1.T@y_true
-x0 = x_true + 10**-3 * np.ones_like(x_true)
+x0 = x_true + 10**-1 * np.ones_like(x_true)
 
 
 # x0 /= np.linalg.norm(x0)
