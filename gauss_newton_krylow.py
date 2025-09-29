@@ -76,6 +76,7 @@ def gauss_newton_krylow(
     tol: float = 1e-8,
     max_iter=100,
     callback: Callable = lambda: None,
+    version: str = "res_old"
 ) -> RegressionResult:
     """
     Parameters
@@ -143,7 +144,14 @@ def gauss_newton_krylow(
         jac_ev = krylow.evaluate(jac, x_coordinate)
 
         try: 
-            krylow.update(jac_ev,res_ev)
+            if version == "res_old":
+                krylow.update(jac_ev,res_ev)
+            elif version == "res_new":
+                krylow.update(jac_ev,res_ev_new)
+            else:
+                raise ValueError("Variable version must be in ['res_old','res_new']")
+
+
             x_coordinate = np.append(x_coordinate,0)
         except GeneralizedKrylowSubspaceBreakdown:
             pass

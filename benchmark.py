@@ -47,13 +47,17 @@ def benchmark(res, x0, jac, error, kwargs={}, additional_methods=[], title=None)
     def gnk(callback):
         return gauss_newton_krylow(res, x0, jac, callback=callback, **kwargs)
 
+    def gnk_new_res(callback):
+        return gauss_newton_krylow(res, x0, jac, callback=callback, version="res_new", **kwargs)
+
+
     def gnk_restart(callback):
         return gauss_newton_krylow(
             res, x0, jac, callback=callback, krylow_restart=20, **kwargs
         )
 
-    #methods = [ref_method, gnk, gnk_restart, gn] + additional_methods
-    methods = [ref_method, gnk, gn] + additional_methods
+    #methods = [ref_method, gnk, gnk_restart, gn, gnk_new_res] + additional_methods
+    methods = [ref_method, gnk, gn, gnk_new_res] + additional_methods
 
     fig, ax = plt.subplots(2, 2, figsize=(10, 10))
     ax = ax.flatten()
