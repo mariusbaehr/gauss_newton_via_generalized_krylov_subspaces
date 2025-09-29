@@ -17,18 +17,17 @@ class GeneralizedKrylowSubspaceBreakdown(Exception):
 
 class GeneralizedKrylowSubspace:
     """
-    The goal of this class is to outsource all the additional complexity from gauss_newton_krylow. To be close to the implementation of gauss_newton.
+    The goal of this class is to outsource complexity from gauss_newton_krylow. To be closer to the implementation of gauss_newton.
 
     Attributes
     ----------
-    basis:
+    basis: The basis of the genearalized Krylow subspace, represented as a matrix with basis vectors as columns.
     """
 
     basis: npt.NDArray
 
     def __init__(self):
         pass
-
 
     def start(self, x0: npt.NDArray) -> npt.NDArray:
         if np.allclose(x0, np.zeros_like(x0)):
@@ -44,7 +43,10 @@ class GeneralizedKrylowSubspace:
     def x(self, x_coordinate: npt.NDArray)->npt.NDArray:
         return self.basis@ x_coordinate
 
-    def evaluate(self, fun, x_coordinate: npt.NDArray,*args: Any):
+    def evaluate(self, fun:Callable[ [npt.NDArray, Tuple[Any]], Union[npt.NDArray, sp.spmatrix] ], x_coordinate: npt.NDArray,*args: Any)->Union[npt.NDArray, sp.spmatrix]:
+        """
+        For evaluating functions such as res or jac on the generalized krylow subspace.
+        """
         return fun(self.x(x_coordinate),*args)
 
     def update(
