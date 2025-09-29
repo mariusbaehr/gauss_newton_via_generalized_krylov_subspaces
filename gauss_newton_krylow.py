@@ -50,6 +50,8 @@ class GeneralizedKrylowSubspace:
     def update(
         self, jac_ev: Union[npt.NDArray,sp.spmatrix], res_ev: npt.NDArray
     ) -> None:
+        print(jac_ev.shape)
+        print(jac_ev.T.shape)
         normal_res = jac_ev.T @ res_ev #TODO: Check sign
         normal_res -= self.basis @ ( self.basis.T @ normal_res)
 
@@ -111,7 +113,7 @@ def gauss_newton_krylow(
         res_ev = res_ev_new
 
         descent_direction, _, _, _ = scipy.linalg.lstsq(
-            -1 * jac_ev, res_ev 
+            -1 * jac_krylow, res_ev 
         )
 
         step_length, res_ev_new, nfev_delta = armijo_goldstein(
@@ -141,7 +143,7 @@ def gauss_newton_krylow(
         jac_ev = krylow.evaluate(jac, x_coordinate)
 
         try: 
-            krylow.update(jac_ev.T,res_ev)
+            krylow.update(jac_ev,res_ev)
             x_coordinate = np.append(x_coordinate,0)
         except GeneralizedKrylowSubspaceBreakdown:
             pass
