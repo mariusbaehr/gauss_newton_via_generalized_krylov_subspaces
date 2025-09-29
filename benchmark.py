@@ -52,7 +52,8 @@ def benchmark(res, x0, jac, error, kwargs={}, additional_methods=[], title=None)
             res, x0, jac, callback=callback, krylow_restart=20, **kwargs
         )
 
-    methods = [ref_method, gnk, gnk_restart, gn] + additional_methods
+    #methods = [ref_method, gnk, gnk_restart, gn] + additional_methods
+    methods = [ref_method, gnk, gn] + additional_methods
 
     fig, ax = plt.subplots(2, 2, figsize=(10, 10))
     ax = ax.flatten()
