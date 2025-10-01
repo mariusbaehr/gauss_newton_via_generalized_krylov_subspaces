@@ -8,9 +8,16 @@ import numpy.typing as npt
 import scipy.sparse as sp
 import scipy
 
-def modified_gram_schmidt(basis: npt.NDArray, vector: npt.NDArray)-> npt.NDArray:
+def modified_gram_schmidt(basis: npt.NDArray, vector: npt.NDArray)-> npt.NDArray: #TODO: Add tol
     for column in basis.T:
-        vector -= (column @ vector) * column
+        column_dot_vector = np.dot(column , vector)
+
+        if np.isclose(column_dot_vector, 0, atol=1E-13):
+            raise GeneralizedKrylowSubspaceBreakdown(
+                "Normal residual is allready inside generalized Krylow Subspcae, there for gauss newton krylow algorithm has to proceed without enlarging subspace."
+            )
+
+        vector -= (column_dot_vector) * column
     return vector
 
 
@@ -56,14 +63,16 @@ class GeneralizedKrylowSubspace:
     def update(
         self, jac_ev: Union[npt.NDArray,sp.spmatrix], res_ev: npt.NDArray
     ) -> None:
+        ATA=self.basis.T @ self.basis
+        ATA-= np.ones_like(ATA)
+        print(np.linalg.norm(ATA))
         normal_res = jac_ev.T @ res_ev #TODO: Check sign
         #normal_res -= self.basis @ ( self.basis.T @ normal_res)
-        normal_res = modified_gram_schmidt(self.basis, normal_res)
 
-        if np.allclose(normal_res, np.zeros_like(normal_res)):
-            raise GeneralizedKrylowSubspaceBreakdown(
-                "Normal residual is allready inside generalized Krylow Subspcae, there for gauss newton krylow algorithm has to proceed without enlarging subspace."
-            )
+        try:
+            normal_res = modified_gram_schmidt(self.basis, normal_res) # TODO: Determine if GKS breaks down based on modified gram schmidt process
+        except GeneralizedKrylowSubspaceBreakdown:
+            raise # Exception will just be passed to gauss_newton_krylow
 
         normal_res /= np.linalg.norm(normal_res)
         normal_res = normal_res.reshape(-1,1)
