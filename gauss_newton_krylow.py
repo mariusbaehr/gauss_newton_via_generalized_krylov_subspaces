@@ -8,11 +8,15 @@ import numpy.typing as npt
 import scipy.sparse as sp
 import scipy
 
+def modified_gram_schmidt(basis: npt.NDArray, vector: npt.NDArray)-> npt.NDArray:
+    for column in basis.T:
+        vector -= (column @ vector) * column
+    return vector
+
+
 class GeneralizedKrylowSubspaceBreakdown(Exception):
     pass # TODO: Not shure if Error is apropriate, as it could naturaly happen
         # TODO: Maybe add error message here
-
-
 
 
 class GeneralizedKrylowSubspace:
@@ -53,7 +57,8 @@ class GeneralizedKrylowSubspace:
         self, jac_ev: Union[npt.NDArray,sp.spmatrix], res_ev: npt.NDArray
     ) -> None:
         normal_res = jac_ev.T @ res_ev #TODO: Check sign
-        normal_res -= self.basis @ ( self.basis.T @ normal_res)
+        #normal_res -= self.basis @ ( self.basis.T @ normal_res)
+        normal_res = modified_gram_schmidt(self.basis, normal_res)
 
         if np.allclose(normal_res, np.zeros_like(normal_res)):
             raise GeneralizedKrylowSubspaceBreakdown(
@@ -63,7 +68,7 @@ class GeneralizedKrylowSubspace:
         normal_res /= np.linalg.norm(normal_res)
         normal_res = normal_res.reshape(-1,1)
         self.basis = np.hstack([self.basis, normal_res])
-
+    
 
 def gauss_newton_krylow(
     res: Callable[[npt.NDArray, Tuple[Any]], npt.NDArray],
