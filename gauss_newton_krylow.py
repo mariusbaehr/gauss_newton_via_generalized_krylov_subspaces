@@ -111,7 +111,7 @@ def gauss_newton_krylow(
     if krylow_restart == None:
         krylow_restart = max_iter
 
-    for iter in range(max_iter):
+    for iter in range(1,max_iter):
 
         jac_krylow = jac_ev @ krylow.basis
         res_ev = res_ev_new
@@ -146,7 +146,7 @@ def gauss_newton_krylow(
 
         jac_ev = krylow.evaluate(jac, x_coordinate)
 
-        if (iter + 1) % (krylow_restart +1) == 0:
+        if iter % krylow_restart == 0:
             x_coordinate = krylow.start(krylow.x(x_coordinate))
             print(f"Restart at {iter}")
             print(f"x_coordinate = {x_coordinate}")

@@ -51,7 +51,7 @@ def gauss_newton(
     res_ev: npt.NDArray = res(x, *args)
     nfev: int = 1
 
-    for iter in range(max_iter):
+    for iter in range(1,max_iter):
 
         # res_ev is updated in step_length control
         jac_ev: Union[npt.NDArray, sp.spmatrix] = jac(x, *args)
