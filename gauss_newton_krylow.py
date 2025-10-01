@@ -108,6 +108,9 @@ def gauss_newton_krylow(
     jac_ev: sp.spmatrix = jac(x0,*args)
     njev: int = 1 #TODO: Use this instead of iter
 
+    if krylow_restart == None:
+        krylow_restart = max_iter
+
     for iter in range(max_iter):
 
         jac_krylow = jac_ev @ krylow.basis
@@ -143,13 +146,18 @@ def gauss_newton_krylow(
 
         jac_ev = krylow.evaluate(jac, x_coordinate)
 
+        if (iter + 1) % (krylow_restart +1) == 0:
+            x_coordinate = krylow.start(krylow.x(x_coordinate))
+            print(f"Restart at {iter}")
+            print(f"x_coordinate = {x_coordinate}")
+            print(f"krylow.basis.shape = {krylow.basis.shape}")
         try: 
             if version == "res_old":
                 krylow.update(jac_ev,res_ev)
             elif version == "res_new":
                 krylow.update(jac_ev,res_ev_new)
             else:
-                raise ValueError("Variable version must be in ['res_old','res_new']")
+                raise ValueError("Variable version must be in ['res_old','res_new']") # TODO Check before hand
 
 
             x_coordinate = np.append(x_coordinate,0)

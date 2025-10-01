@@ -41,7 +41,7 @@ def too_small_steps(res, x, res_ev, jac_ev, args, descent_direction, *_):
     step_length = -1 / descent_direction[0] * 2**-iter
     iter += 1
 
-    # Check if step length would by feasible according Armijo rule
+    # Check if step lenght would be rejected by Armijo rule
     prev_loss = np.sum(res(x, *args) ** 2)
     jac_dot_descent = np.sum((jac_ev @ descent_direction) ** 2) / 2
     res_ev = res(x + step_length * descent_direction, *args)
