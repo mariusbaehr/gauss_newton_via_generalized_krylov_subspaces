@@ -146,11 +146,8 @@ def gauss_newton_krylow(
 
         jac_ev = krylow.evaluate(jac, x_coordinate)
 
-        if iter % krylow_restart == 0:
+        if iter % krylow_restart == 0: #TODO it might be more reasonable to restart based on krylow.basis dimension
             x_coordinate = krylow.start(krylow.x(x_coordinate))
-            print(f"Restart at {iter}")
-            print(f"x_coordinate = {x_coordinate}")
-            print(f"krylow.basis.shape = {krylow.basis.shape}")
         try: 
             if version == "res_old":
                 krylow.update(jac_ev,res_ev)
