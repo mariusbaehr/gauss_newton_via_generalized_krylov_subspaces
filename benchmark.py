@@ -66,9 +66,9 @@ def benchmark(res, x0, jac, error, kwargs={}, additional_methods=[], title=None)
     timeit_number = 1
     for method in methods:
         global error_list, loss_list, nfev_list
-        error_list = []
-        loss_list = []
-        nfev_list = []
+        error_list = [error(x0)]
+        loss_list = [loss(x0)]
+        nfev_list = [0]
         if method.__name__ in ["ref_method", "ref_cg"]:
             time = (
                 timeit.timeit(lambda: method(None), number=timeit_number)
