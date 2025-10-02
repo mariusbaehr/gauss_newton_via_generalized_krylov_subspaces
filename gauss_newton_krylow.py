@@ -12,10 +12,10 @@ def modified_gram_schmidt(basis: npt.NDArray, vector: npt.NDArray, atol = 1E-10)
     for column in basis.T:
         column_dot_vector = np.dot(column , vector)
 
-        if np.isclose(column_dot_vector, 0, atol=atol):
-            raise GeneralizedKrylowSubspaceBreakdown(
-                "Normal residual is allready inside generalized Krylow Subspcae, there for gauss newton krylow algorithm has to proceed without enlarging subspace."
-            )
+ #       if np.isclose(column_dot_vector, 0, atol=atol):
+ #           raise GeneralizedKrylowSubspaceBreakdown(
+ #               "Normal residual is allready inside generalized Krylow Subspcae, there for gauss newton krylow algorithm has to proceed without enlarging subspace."
+ #           )
 
         vector -= (column_dot_vector) * column
         
