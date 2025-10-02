@@ -73,9 +73,9 @@ class GeneralizedKrylowSubspace:
     def update(
         self, jac_ev: Union[npt.NDArray,sp.spmatrix], res_ev: npt.NDArray
     ) -> None:
-        ATA=self.basis.T @ self.basis
-        ATA-= np.eye(ATA.shape[0])
-        print(np.linalg.norm(ATA))
+#        ATA=self.basis.T @ self.basis
+#        ATA-= np.eye(ATA.shape[0])
+#        print(np.linalg.norm(ATA))
         normal_res = jac_ev.T @ res_ev #TODO: Check sign
         #normal_res -= self.basis @ ( self.basis.T @ normal_res)
 
