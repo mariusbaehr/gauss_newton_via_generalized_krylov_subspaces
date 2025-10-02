@@ -8,16 +8,26 @@ import numpy.typing as npt
 import scipy.sparse as sp
 import scipy
 
-def modified_gram_schmidt(basis: npt.NDArray, vector: npt.NDArray)-> npt.NDArray: #TODO: Add tol
+def modified_gram_schmidt(basis: npt.NDArray, vector: npt.NDArray, atol = 1E-10)-> npt.NDArray: #TODO: Add tol
     for column in basis.T:
         column_dot_vector = np.dot(column , vector)
 
-        if np.isclose(column_dot_vector, 0, atol=1E-13):
+        if np.isclose(column_dot_vector, 0, atol=atol):
             raise GeneralizedKrylowSubspaceBreakdown(
                 "Normal residual is allready inside generalized Krylow Subspcae, there for gauss newton krylow algorithm has to proceed without enlarging subspace."
             )
 
         vector -= (column_dot_vector) * column
+        
+    vector_norm = np.linalg.norm(vector)
+    if np.isclose(vector_norm, 0, atol=atol): 
+        raise GeneralizedKrylowSubspaceBreakdown(
+            "Normal residual is allready inside generalized Krylow Subspcae, there for gauss newton krylow algorithm has to proceed without enlarging subspace."
+            )
+
+    vector /= vector_norm
+
+
     return vector
 
 
