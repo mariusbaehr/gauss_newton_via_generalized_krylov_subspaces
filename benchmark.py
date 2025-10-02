@@ -65,10 +65,12 @@ def benchmark(res, x0, jac, error, kwargs={}, additional_methods=[], title=None)
     methods = [ref_method, gnk, gnk_restart_new, gn, gnk_new_res] + additional_methods
     #methods = [ref_method, gnk, gn, gnk_new_res] + additional_methods
 
-    fig, ax = plt.subplots(2, 2, figsize=(10, 10))
-    ax = ax.flatten()
-    ax[0].set_title("Error Plot")
-    ax[1].set_title("Loss Plot")
+    fig1, ax1 = plt.subplots()
+    fig2, ax2 = plt.subplots()
+    fig3, ax3 = plt.subplots()
+    ax1.set_title("Error Plot")
+    ax2.set_title("Loss Plot")
+    ax3.set_title("fnev Plot")
     timeit_number = 1
     for method in methods:
         global error_list, loss_list, nfev_list
@@ -93,15 +95,18 @@ def benchmark(res, x0, jac, error, kwargs={}, additional_methods=[], title=None)
 
         print(f"method = {method.__name__} time = {time} ")
 
-        nit = len(error_list)  # actually this is nit+1
-        ax[0].semilogy(range(nit), error_list, "x-", label=method.__name__)
-        ax[1].semilogy(range(nit), loss_list, "x-", label=method.__name__)
-        ax[2].plot(range(nit), nfev_list, "x-", label=method.__name__)
+        nit = len(error_list)
+        ax1.semilogy(range(nit), error_list, "x-", label=method.__name__)
+        ax2.semilogy(range(nit), loss_list, "x-", label=method.__name__)
+        ax3.plot(range(nit), nfev_list, "x-", label=method.__name__)
 
-    ax[0].legend()
-    ax[1].legend()
-    ax[2].legend()
+    ax1.legend()
+    ax2.legend()
+    ax3.legend()
 
     if not title == None:
-        plt.savefig(title + ".png", bbox_inches="tight")
+        fig1.savefig(title + "error"+ ".png", bbox_inches="tight")
+        fig2.savefig(title + "loss"+ ".png", bbox_inches="tight")
+        fig3.savefig(title + "nfev" + ".png", bbox_inches="tight")
+
     plt.show()
