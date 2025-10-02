@@ -37,6 +37,12 @@ def benchmark(res, x0, jac, error, kwargs={}, additional_methods=[], title=None)
         loss_list.append(loss(intermediate_result.x))
         nfev_list.append(intermediate_result.nfev)
         # print(intermediate_result.njev)
+    def callback_cg(x):
+        global error_list, loss_list, nfev_list
+        error_list.append(error(x))
+        loss_list.append(loss(x))
+        nfev_list.append(0)
+
 
     def gn(callback):
         return gauss_newton(res, x0, jac, callback=callback, **kwargs)
@@ -69,12 +75,15 @@ def benchmark(res, x0, jac, error, kwargs={}, additional_methods=[], title=None)
         error_list = [error(x0)]
         loss_list = [loss(x0)]
         nfev_list = [0]
-        if method.__name__ in ["ref_method", "ref_cg"]:
+        if method.__name__ == "ref_method":
             time = (
                 timeit.timeit(lambda: method(None), number=timeit_number)
                 / timeit_number
             )
             method(callback_scipy)
+        elif method.__name__== "ref_cg":
+            method(callback_cg)
+            time = None
         else:
             time = (
                 timeit.timeit(lambda: method(lambda: None), number=timeit_number)
