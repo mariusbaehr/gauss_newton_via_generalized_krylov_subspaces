@@ -31,18 +31,17 @@ def error(x):
     return np.linalg.norm(x - x_exact)
 
 from gauss_newton import gauss_newton
-x0_new = gauss_newton(res, x0, jac,max_iter=155).x
+x0_ii = gauss_newton(res, x0, jac,max_iter=155).x
 
 if __name__ == '__main__':
-    #benchmark(res, x0, jac, error, {"max_iter": 500}, title="rosenbrock")
+    benchmark(res, x0, jac, error, {"max_iter": 500}, title="rosenbrock_i_")
 
-    benchmark(res, x0_new, jac, error, {"max_iter":500}, title="rosenbrock_x0_new")
+    benchmark(res, x0_ii, jac, error, {"max_iter":500}, title="rosenbrock_ii_")
 
-    x0_2 = (1+1E-1)*x_exact
-    benchmark(res,x0_2, jac, error, {"max_iter":500}, title="rosenbrock_3")
+    x0_iii = (1+1E-1)*x_exact
+    benchmark(res,x0_iii, jac, error, {"max_iter":500}, title="rosenbrock_iii_")
 
-    x0_3 = x0_2.copy()
-    x0_3[0] = 1
+    x0_iv = x0_iii.copy()
+    x0_iv[0] = 1
     
-    benchmark(res,x0_3, jac, error, {"max_iter":500}, title="rosenbrock_3")
-# TODO: plot the step length, I guess they are set to 1 when the error goes down
+    benchmark(res,x0_iv, jac, error, {"max_iter":500}, title="rosenbrock_iv_")
