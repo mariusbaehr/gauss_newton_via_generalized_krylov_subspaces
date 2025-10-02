@@ -75,7 +75,7 @@ class GeneralizedKrylowSubspace:
     ) -> None:
 #        ATA=self.basis.T @ self.basis
 #        ATA-= np.eye(ATA.shape[0])
-#        print(np.linalg.norm(ATA))
+#        print(np.linalg.norm(ATA, ord=inf)) # Changed ord to inf
         normal_res = jac_ev.T @ res_ev #TODO: Check sign
         #normal_res -= self.basis @ ( self.basis.T @ normal_res)
 
