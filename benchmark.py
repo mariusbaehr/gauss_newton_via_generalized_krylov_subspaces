@@ -65,13 +65,13 @@ def benchmark(res, x0, jac, error, kwargs={}, additional_methods=[], title=None)
     methods = [ref_method, gnk, gnk_restart_new, gn, gnk_new_res] + additional_methods
     #methods = [ref_method, gnk, gn, gnk_new_res] + additional_methods
 
-    fig1, ax1 = plt.subplots(figsize=(12,6))
+    fig1, ax1 = plt.subplots(figsize=(8,4))
     ax1.set_xlabel("Iterationen")
     ax1.set_ylabel(r"Fehler $\log\|x_k-x^\ast\|$")
-    fig2, ax2 = plt.subplots(figsize=(12,6))
+    fig2, ax2 = plt.subplots(figsize=(8,4))
     ax2.set_xlabel("Iterationen")
     ax2.set_ylabel(r"Verlust $\log\mathcal{L}$")
-    fig3, ax3 = plt.subplots(figsize=(12,6))
+    fig3, ax3 = plt.subplots(figsize=(8,4))
     ax3.set_xlabel("Iterationen")
     ax3.set_ylabel(r"Anzahl $f$ Auswertungen")
 #    ax1.set_title("Error Plot")
