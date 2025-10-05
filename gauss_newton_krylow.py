@@ -8,32 +8,34 @@ import numpy.typing as npt
 import scipy.sparse as sp
 import scipy
 
-def modified_gram_schmidt(basis: npt.NDArray, vector: npt.NDArray, atol = 1E-10)-> npt.NDArray: #TODO: Add tol
-    for column in basis.T:
-        column_dot_vector = np.dot(column , vector)
 
- #       if np.isclose(column_dot_vector, 0, atol=atol):
- #           raise GeneralizedKrylowSubspaceBreakdown(
- #               "Normal residual is allready inside generalized Krylow Subspcae, there for gauss newton krylow algorithm has to proceed without enlarging subspace."
- #           )
+def modified_gram_schmidt(
+    basis: npt.NDArray, vector: npt.NDArray, atol=1e-10
+) -> npt.NDArray:  # TODO: Add tol
+    for column in basis.T:
+        column_dot_vector = np.dot(column, vector)
+
+        #       if np.isclose(column_dot_vector, 0, atol=atol):
+        #           raise GeneralizedKrylowSubspaceBreakdown(
+        #               "Normal residual is allready inside generalized Krylow Subspcae, there for gauss newton krylow algorithm has to proceed without enlarging subspace."
+        #           )
 
         vector -= (column_dot_vector) * column
-        
+
     vector_norm = np.linalg.norm(vector)
-    if np.isclose(vector_norm, 0, atol=atol): 
+    if np.isclose(vector_norm, 0, atol=atol):
         raise GeneralizedKrylowSubspaceBreakdown(
             "Normal residual is allready inside generalized Krylow Subspcae, there for gauss newton krylow algorithm has to proceed without enlarging subspace."
-            )
+        )
 
     vector /= vector_norm
-
 
     return vector
 
 
 class GeneralizedKrylowSubspaceBreakdown(Exception):
-    pass # TODO: Not shure if Error is apropriate, as it could naturaly happen
-        # TODO: Maybe add error message here
+    pass  # TODO: Not shure if Error is apropriate, as it could naturaly happen
+    # TODO: Maybe add error message here
 
 
 class GeneralizedKrylowSubspace:
@@ -57,57 +59,62 @@ class GeneralizedKrylowSubspace:
             )
 
         x0_norm = np.linalg.norm(x0)
-        self.basis = (x0 / x0_norm).reshape(-1,1)
+        self.basis = (x0 / x0_norm).reshape(-1, 1)
         x_coordinate = np.array([x0_norm])
         return x_coordinate
 
-    def x(self, x_coordinate: npt.NDArray)->npt.NDArray:
-        return self.basis@ x_coordinate
+    def x(self, x_coordinate: npt.NDArray) -> npt.NDArray:
+        return self.basis @ x_coordinate
 
-    def evaluate(self, fun:Callable[ [npt.NDArray, Tuple[Any]], Union[npt.NDArray, sp.spmatrix] ], x_coordinate: npt.NDArray,*args: Any)->Union[npt.NDArray, sp.spmatrix]:
+    def evaluate(
+        self,
+        fun: Callable[[npt.NDArray, Tuple[Any]], Union[npt.NDArray, sp.spmatrix]],
+        x_coordinate: npt.NDArray,
+        *args: Any
+    ) -> Union[npt.NDArray, sp.spmatrix]:
         """
         For evaluating functions such as res or jac on the generalized krylow subspace.
         """
-        return fun(self.x(x_coordinate),*args)
+        return fun(self.x(x_coordinate), *args)
 
     def update(
-        self, jac_ev: Union[npt.NDArray,sp.spmatrix], res_ev: npt.NDArray
+        self, jac_ev: Union[npt.NDArray, sp.spmatrix], res_ev: npt.NDArray
     ) -> None:
-#        ATA=self.basis.T @ self.basis
-#        ATA-= np.eye(ATA.shape[0])
-#        print(np.linalg.norm(ATA, ord=inf)) # Changed ord to inf
-        normal_res = -jac_ev.T @ res_ev 
-        #normal_res -= self.basis @ ( self.basis.T @ normal_res)
+        #        ATA=self.basis.T @ self.basis
+        #        ATA-= np.eye(ATA.shape[0])
+        #        print(np.linalg.norm(ATA, ord=inf)) # Changed ord to inf
+        normal_res = -jac_ev.T @ res_ev
+        # normal_res -= self.basis @ ( self.basis.T @ normal_res)
 
         try:
-            normal_res = modified_gram_schmidt(self.basis, normal_res) # TODO: Determine if GKS breaks down based on modified gram schmidt process
+            normal_res = modified_gram_schmidt(
+                self.basis, normal_res
+            )  # TODO: Determine if GKS breaks down based on modified gram schmidt process
         except GeneralizedKrylowSubspaceBreakdown:
-            raise # Exception will just be passed to gauss_newton_krylow
+            raise  # Exception will just be passed to gauss_newton_krylow
 
         normal_res /= np.linalg.norm(normal_res)
-        normal_res = normal_res.reshape(-1,1)
+        normal_res = normal_res.reshape(-1, 1)
         self.basis = np.hstack([self.basis, normal_res])
-    
+
 
 def gauss_newton_krylow(
     res: Callable[[npt.NDArray, Tuple[Any]], npt.NDArray],
     x0: npt.NDArray,
-    jac: Callable[
-        [npt.NDArray, Tuple[Any]], Union[npt.NDArray, sp.spmatrix]
-    ],
+    jac: Callable[[npt.NDArray, Tuple[Any]], Union[npt.NDArray, sp.spmatrix]],
     krylow_restart: int | None = None,
     args: Tuple = (),
     tol: float = 1e-8,
     max_iter=100,
     callback: Callable = lambda: None,
-    version: str = "res_old"
+    version: str = "res_old",
 ) -> RegressionResult:
     """
     Parameters
     ----------
     res: The residual function, called as res(x, *args) the argument x and its return must always be ndarrays.
     x0: Initial guess of the regression parameters.
-    jac: 
+    jac:
     krylow_restart: If the krylow_basis gets larger than krylow_restart the basis is reset, if left to None basis never resets.
     args: Additional arguments passed to res and jac.
     tol: Tolerance for termination by the change of the paramters x.
@@ -124,25 +131,23 @@ def gauss_newton_krylow(
     krylow = GeneralizedKrylowSubspace()
     x_coordinate = krylow.start(x0)
 
-    def res_krylow(x_coordinate,*args):
-        return krylow.evaluate(res,x_coordinate,*args)
+    def res_krylow(x_coordinate, *args):
+        return krylow.evaluate(res, x_coordinate, *args)
 
-    res_ev_new: npt.NDArray = res_krylow(x_coordinate,*args)
+    res_ev_new: npt.NDArray = res_krylow(x_coordinate, *args)
     nfev: int = 1
-    jac_ev: sp.spmatrix = jac(x0,*args)
-    njev: int = 1 #TODO: Use this instead of iter
+    jac_ev: sp.spmatrix = jac(x0, *args)
+    njev: int = 1  # TODO: Use this instead of iter
 
     if krylow_restart == None:
         krylow_restart = max_iter
 
-    for iter in range(1,max_iter):
+    for iter in range(1, max_iter):
 
         jac_krylow = jac_ev @ krylow.basis
         res_ev = res_ev_new
 
-        descent_direction, _, _, _ = scipy.linalg.lstsq(
-            -1 * jac_krylow, res_ev 
-        )
+        descent_direction, _, _, _ = scipy.linalg.lstsq(-1 * jac_krylow, res_ev)
 
         step_length, res_ev_new, nfev_delta = armijo_goldstein(
             res_krylow, x_coordinate, res_ev, jac_krylow, args, descent_direction
@@ -170,22 +175,23 @@ def gauss_newton_krylow(
 
         jac_ev = krylow.evaluate(jac, x_coordinate)
 
-        if iter % krylow_restart == 0: #TODO it might be more reasonable to restart based on krylow.basis dimension
+        if (
+            iter % krylow_restart == 0
+        ):  # TODO it might be more reasonable to restart based on krylow.basis dimension
             x_coordinate = krylow.start(krylow.x(x_coordinate))
-        try: 
+        try:
             if version == "res_old":
-                krylow.update(jac_ev,res_ev)
+                krylow.update(jac_ev, res_ev)
             elif version == "res_new":
-                krylow.update(jac_ev,res_ev_new)
+                krylow.update(jac_ev, res_ev_new)
             else:
-                raise ValueError("Variable version must be in ['res_old','res_new']") # TODO Check before hand
+                raise ValueError(
+                    "Variable version must be in ['res_old','res_new']"
+                )  # TODO Check before hand
 
-
-            x_coordinate = np.append(x_coordinate,0)
+            x_coordinate = np.append(x_coordinate, 0)
         except GeneralizedKrylowSubspaceBreakdown:
             pass
-
-
 
     if not success:
         print(

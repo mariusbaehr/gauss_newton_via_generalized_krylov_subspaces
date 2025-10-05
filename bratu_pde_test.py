@@ -74,7 +74,7 @@ def ref_cg(callback):
     return cg
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     benchmark(
         res, x0, jac, error, {"max_iter": 300, "tol": 1e-12}, title="bratu_pde"
     )  # ,additional_methods=[ref_cg])

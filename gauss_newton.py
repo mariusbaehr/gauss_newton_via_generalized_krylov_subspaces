@@ -12,9 +12,7 @@ import scipy
 def gauss_newton(
     res: Callable[[npt.NDArray, Tuple[Any]], npt.NDArray],
     x0: npt.NDArray,
-    jac: Callable[
-        [npt.NDArray, Tuple[Any]], Union[npt.NDArray, sp.spmatrix]
-    ],
+    jac: Callable[[npt.NDArray, Tuple[Any]], Union[npt.NDArray, sp.spmatrix]],
     args: Tuple = (),
     tol: float = 1e-8,
     max_iter=100,
@@ -51,7 +49,7 @@ def gauss_newton(
     res_ev: npt.NDArray = res(x, *args)
     nfev: int = 1
 
-    for iter in range(1,max_iter):
+    for iter in range(1, max_iter):
 
         # res_ev is updated in step_length control
         jac_ev: Union[npt.NDArray, sp.spmatrix] = jac(x, *args)
