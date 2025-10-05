@@ -31,7 +31,7 @@ from gauss_newton import gauss_newton
 if __name__ == "__main__":
 
     x0 = np.zeros(p)
-    x0[0] = 1.5  # Because zero is not allowed in gauss_newton_krylow
+    x0[0] = -0.5  # Because zero is not allowed in gauss_newton_krylow
     benchmark(res, x0, jac, error, {"max_iter": 500}, title="rosenbrock_i_")
 
     x0_ii = gauss_newton(res, x0, jac, max_iter=155).x
