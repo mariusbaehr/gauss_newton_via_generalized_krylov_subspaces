@@ -12,8 +12,6 @@ def res(x):
     return np.concatenate([block1, block2])
 
 
-x0 = np.zeros(p)
-x0[0] = 1.5  # Because zero is not allowed in gauss_newton_krylow
 
 
 def jac(x):
@@ -31,11 +29,15 @@ def error(x):
     return np.linalg.norm(x - x_exact)
 
 from gauss_newton import gauss_newton
-x0_ii = gauss_newton(res, x0, jac,max_iter=155).x
 
 if __name__ == '__main__':
-    benchmark(res, x0, jac, error, {"max_iter": 500}, title="rosenbrock_i_")
 
+    x0 = np.zeros(p)
+    x0[0] = 1.5  # Because zero is not allowed in gauss_newton_krylow
+    benchmark(res, x0, jac, error, {"max_iter": 500}, title="rosenbrock_i_")
+    
+    x0_ii = gauss_newton(res, x0, jac,max_iter=155).x
+    print(x0_ii)
     benchmark(res, x0_ii, jac, error, {"max_iter":500}, title="rosenbrock_ii_")
 
     x0_iii = 2*x_exact # (1+1E-1)*x_exact
