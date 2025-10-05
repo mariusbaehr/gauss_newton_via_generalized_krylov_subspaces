@@ -38,7 +38,7 @@ if __name__ == '__main__':
 
     benchmark(res, x0_ii, jac, error, {"max_iter":500}, title="rosenbrock_ii_")
 
-    x0_iii = (1+1E-1)*x_exact
+    x0_iii = 2*x_exact # (1+1E-1)*x_exact
     benchmark(res,x0_iii, jac, error, {"max_iter":500}, title="rosenbrock_iii_")
 
     x0_iv = x0_iii.copy()
