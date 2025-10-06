@@ -173,7 +173,7 @@ def gauss_newton_krylow(
             success = True
             break
 
-        jac_ev = krylow.evaluate(jac, x_coordinate)
+        jac_ev = krylow.evaluate(jac, x_coordinate, *args)
 
         if (
             iter % krylow_restart == 0
