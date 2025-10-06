@@ -21,9 +21,13 @@ def benchmark(res, x0, jac, error, kwargs={}, additional_methods=[], title=None)
 
     """
     # TODO: make error optional as it is not always available
-
-    def loss(x):
-        return np.sum(res(x) ** 2)
+    
+    if "args" in kwargs:
+        def loss(x):
+            return np.sum(res(x, *kwargs["args"]) ** 2)
+    else:
+        def loss(x):
+            return np.sum(res(x) ** 2)
 
     def callback(x, nfev):
         global error_list, loss_list, nfev_list
@@ -47,8 +51,12 @@ def benchmark(res, x0, jac, error, kwargs={}, additional_methods=[], title=None)
     def gn(callback):
         return gauss_newton(res, x0, jac, callback=callback, **kwargs)
 
-    def ref_method(callback):
-        return scipy.optimize.least_squares(res, x0, jac, callback=callback)
+    if "args" in kwargs:
+        def ref_method(callback):
+            return scipy.optimize.least_squares(res, x0, jac, callback=callback, args=kwargs["args"])
+    else: 
+        def ref_method(callback):
+            return scipy.optimize.least_squares(res, x0, jac, callback=callback)
 
     def gnk(callback):
         return gauss_newton_krylow(res, x0, jac, callback=callback, **kwargs)
