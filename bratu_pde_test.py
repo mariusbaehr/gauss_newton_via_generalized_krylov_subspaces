@@ -20,9 +20,7 @@ def u(x1, x2):
 A1 = scipy.sparse.diags_array(
     (-np.ones(n - 2), 2 * np.ones(n - 1), -np.ones(n - 2)), offsets=(-1, 0, 1)
 )  # shape (n-1,n-1)
-A2 = scipy.sparse.kron(A1, np.eye(n - 1)) + scipy.sparse.kron(
-    scipy.sparse.eye(n - 1), A1
-)  # shape ((n-1)**2,(n-1)**2)
+A2 = scipy.sparse.kron(A1, scipy.sparse.eye(n - 1)) + scipy.sparse.kron( scipy.sparse.eye(n - 1), A1)  # shape ((n-1)**2,(n-1)**2)
 Dx1 = scipy.sparse.kron(
     scipy.sparse.diags_array((-np.ones(n - 1), np.ones(n - 2)), offsets=(0, 1)),
     scipy.sparse.eye(n - 1),
@@ -42,10 +40,6 @@ def y_true(h):
 # y_true = lamb_f(x1, x2).flatten()
 
 
-#x0 = np.zeros_like(x_true)
-#x0[1] = 1
-#x0= A_h2.T@y_true+a1*D_x1.T@y_true
-x0 = -2*x_true #+ 10**-1 * np.ones_like(x_true)
 
 
 def res(x,h):
@@ -53,7 +47,7 @@ def res(x,h):
 
 
 def jac(x,h):
-    return - h**2 * A2 - h**-1 * a1 * Dx1 - a2 * scipy.sparse.diags(np.exp(x))
+    return - h**-2 * A2 - h**-1 * a1 * Dx1 - a2 * scipy.sparse.diags(np.exp(x))
 
 
 def error(x):
@@ -73,8 +67,14 @@ ATAh = scipy.sparse.linalg.LinearOperator(((n - 1) ** 2, (n - 1) ** 2), matvec= 
  #    )
  #    return cg
 
-
 if __name__ == "__main__":
+
+    #x0 = np.zeros_like(x_true)
+    #x0[1] = 1
+    #x0= A_h2.T@y_true+a1*D_x1.T@y_true
+    #x0 = -2*x_true 
+    x0 = x_true + 10**-1 * np.ones_like(x_true)
+
     benchmark(
         res, x0, jac, error, {"args": (h,), "max_iter": 100, "tol": 1e-12}, title="bratu_pde"
     )  # ,additional_methods=[ref_cg])
