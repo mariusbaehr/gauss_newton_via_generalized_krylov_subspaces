@@ -9,9 +9,26 @@ import scipy.sparse as sp
 import scipy
 
 
+def linear_least_squares(A: npt.NDArray, y: npt.NDArray) -> npt.NDArray:
+    """
+    TODO
+    """
+
+    q,r = np.linalg.qr(A)
+    # TODO: Check if r is rank defficient
+    for r_ii in np.diagonal(r):
+        if np.allclose(r_ii,0):
+            print("A is rank defficient")
+    x = scipy.linalg.solve_triangular(r,q.T@y)
+    return x
+
+
 def modified_gram_schmidt(
     basis: npt.NDArray, vector: npt.NDArray, atol=1e-10
 ) -> npt.NDArray:  # TODO: Add tol
+    """
+    TODO
+    """
     for column in basis.T:
         column_dot_vector = np.dot(column, vector)
 
@@ -147,7 +164,8 @@ def gauss_newton_krylow(
         jac_krylow = jac_ev @ krylow.basis
         res_ev = res_ev_new
 
-        descent_direction, _, _, _ = scipy.linalg.lstsq(-1 * jac_krylow, res_ev)
+        #descent_direction, _, _, _ = scipy.linalg.lstsq(-1 * jac_krylow, res_ev)
+        descent_direction = linear_least_squares(-1 * jac_krylow, res_ev)
 
         step_length, res_ev_new, nfev_delta = armijo_goldstein(
             res_krylow, x_coordinate, res_ev, jac_krylow, args, descent_direction
