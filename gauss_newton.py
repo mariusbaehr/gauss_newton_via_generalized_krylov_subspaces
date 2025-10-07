@@ -8,15 +8,22 @@ import numpy.typing as npt
 import scipy.sparse as sp
 import scipy
 
-def cg_least_squares(A : sp.spmatrix, y: npt.NDArray) -> npt.NDArray: # Tuple[npt.NDArray,int]:
+def cg_least_squares(A : sp.spmatrix, y: npt.NDArray, x0: npt.NDArray | None = None) -> Tuple[npt.NDArray,int]:
     """
     """
     p = A.shape[1]
     
     ATA = scipy.sparse.linalg.LinearOperator((p,p),matvec = lambda x: A.T @ (A @ x))
+    
+    global cg_iter
+    cg_iter = 0
+    def cb_iter(x):
+        global cg_iter
+        cg_iter += 1
 
-    x, _ = scipy.sparse.linalg.cg(ATA, A.T@y)
-    return x
+    x, _ = scipy.sparse.linalg.cg(ATA, A.T@y, x0=x0, callback=cb_iter)
+
+    return x, cg_iter
 
 
 def gauss_newton(
@@ -54,7 +61,7 @@ def gauss_newton(
     x: npt.NDArray = x0.copy()
     success: bool = False
 
-    lsqr_iter: int | None = None
+    cg_iter: int | None = None
 
     res_ev: npt.NDArray = res(x, *args)
     nfev: int = 1
@@ -67,7 +74,7 @@ def gauss_newton(
 
         if is_sparse:
             #descent_direction, _, lsqr_iter, *_ = scipy.sparse.linalg.lsqr( -1.0 * jac_ev, res_ev)
-            descent_direction = cg_least_squares(-jac_ev, res_ev)
+            descent_direction, cg_iter = cg_least_squares(-jac_ev, res_ev, x)
         else:
             descent_direction, _, _, _ = scipy.linalg.lstsq(-1 * jac_ev, res_ev)
 
@@ -88,7 +95,7 @@ def gauss_newton(
                 "jac": jac,
                 "step_length": step_length,
                 "nfev": nfev,
-                "lsqr_iter": lsqr_iter,
+                "cg_iter": cg_iter,
             }
         )
 
