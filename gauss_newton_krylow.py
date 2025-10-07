@@ -15,9 +15,8 @@ def linear_least_squares(A: npt.NDArray, y: npt.NDArray) -> npt.NDArray:
     """
 
     q,r = np.linalg.qr(A)
-    # TODO: Check if r is rank defficient
-    for r_ii in np.diagonal(r):
-        if np.allclose(r_ii,0):
+    for r_kk in np.diagonal(r):
+        if np.allclose(r_kk,0):
             print("A is rank defficient")
     x = scipy.linalg.solve_triangular(r,q.T@y)
     return x
