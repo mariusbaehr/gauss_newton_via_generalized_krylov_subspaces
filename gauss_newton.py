@@ -8,6 +8,16 @@ import numpy.typing as npt
 import scipy.sparse as sp
 import scipy
 
+def cg_least_squares(A : sp.spmatrix, y: npt.NDArray) -> npt.NDArray: # Tuple[npt.NDArray,int]:
+    """
+    """
+    p = A.shape[1]
+    
+    ATA = scipy.sparse.linalg.LinearOperator((p,p),matvec = lambda x: A.T @ (A @ x))
+
+    x, _ = scipy.sparse.linalg.cg(ATA, A.T@y)
+    return x
+
 
 def gauss_newton(
     res: Callable[[npt.NDArray, Tuple[Any]], npt.NDArray],
@@ -56,9 +66,8 @@ def gauss_newton(
         is_sparse: bool = isinstance(jac_ev, (sp.sparray, sp.spmatrix))
 
         if is_sparse:
-            descent_direction, _, lsqr_iter, *_ = scipy.sparse.linalg.lsqr(
-                -1.0 * jac_ev, res_ev
-            )
+            #descent_direction, _, lsqr_iter, *_ = scipy.sparse.linalg.lsqr( -1.0 * jac_ev, res_ev)
+            descent_direction = cg_least_squares(-jac_ev, res_ev)
         else:
             descent_direction, _, _, _ = scipy.linalg.lstsq(-1 * jac_ev, res_ev)
 
