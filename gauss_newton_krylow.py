@@ -19,11 +19,13 @@ def linear_least_squares(A: npt.NDArray, y: npt.NDArray) -> npt.NDArray:
 
     
     for r_kk in np.diagonal(r):
-        if np.allclose(r_kk,0, atol= 1E-8):
-            print("A is rank defficient")
+        if np.isclose(r_kk,0, atol= 1E-8):
+            print("A is rank deficient")
     x = scipy.linalg.solve_triangular(r,q.T@y)
     #x= scipy.linalg.solve(r,q.T@y)
     #TODO: Scipy says r is illconditond, my rank defficiency thest cannot detect this.
+
+    x, _, _, _ = scipy.linalg.lstsq(A,y)
     return x
 
 
