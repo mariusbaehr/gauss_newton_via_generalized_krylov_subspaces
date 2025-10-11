@@ -199,10 +199,6 @@ def gauss_newton_krylow(
 
         jac_ev = krylow.evaluate(jac, x_coordinate, *args)
 
-        if (
-            iter % krylow_restart == 0
-        ):  # TODO it might be more reasonable to restart based on krylow.basis dimension
-            x_coordinate = krylow.start(krylow.x(x_coordinate))
         try:
             if version == "res_old":
                 krylow.update(jac_ev, res_ev)
@@ -216,6 +212,11 @@ def gauss_newton_krylow(
             x_coordinate = np.append(x_coordinate, 0)
         except GeneralizedKrylowSubspaceBreakdown:
             pass
+
+        if (
+            iter % krylow_restart == 0
+        ):  # TODO it might be more reasonable to restart based on krylow.basis dimension
+            x_coordinate = krylow.start(krylow.x(x_coordinate))
 
     if not success:
         print(
