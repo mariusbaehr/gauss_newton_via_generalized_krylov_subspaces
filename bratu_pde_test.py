@@ -27,7 +27,7 @@ Dx1 = scipy.sparse.kron(
 
 x1, x2 = np.meshgrid(np.linspace(a, b, n + 1)[1:-1], np.linspace(a, b, n + 1)[1:-1])
 
-x_true = u(x1, x2).flatten()
+x_true = u(x1, x2).flatten('F')
 
 
 
@@ -75,7 +75,7 @@ if __name__ == "__main__":
     sp_u = sp.exp(-10*(sp_x**2+sp_y**2))
     sp_f = - sp.diff(sp_u,sp_x,sp_x) - sp.diff(sp_u,sp_y,sp_y) + alpha*sp.diff(sp_u,sp_x)  + lamb*sp.exp(sp_u)
     lamb_f = sp.lambdify((sp_x,sp_y),sp_f)
-    y_manufactured_solution = lamb_f(x1, x2).flatten()
+    y_manufactured_solution = lamb_f(x1, x2).flatten('F')
 
     benchmark(
         res, x0, jac, error, {"args": (h,y_manufactured_solution,alpha ,lamb), "max_iter": 22, "tol": 1e-12}, title="bratu_manufactured_solution")
