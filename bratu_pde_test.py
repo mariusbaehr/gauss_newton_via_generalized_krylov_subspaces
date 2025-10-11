@@ -4,13 +4,12 @@ import sympy as sp
 from benchmark import benchmark
 
 n = 101  # Notice N=P=(n-1)*(n-1)
-# Not actually a regression problem with gaussian noise, because N=P. However at least the linear case a2=0 might be interesting for checking if the generalized krylow subspaces are correct implemented.
-a1 = 5
-a2 = 10
+alpha = 5
+lamb = 10
 
 a = -3
 b = 3
-h = (b-a)/n #Note the scaling was omitted in "An effective implementation of Gauss Newton via generalized Krylow subspaces"
+h = (b-a)/n 
 
 
 def u(x1, x2):
@@ -31,40 +30,24 @@ x1, x2 = np.meshgrid(np.linspace(a, b, n + 1)[1:-1], np.linspace(a, b, n + 1)[1:
 x_true = u(x1, x2).flatten()
 
 
-def y_true(h):
-    return h**-2 * A2 @ x_true + h**-1 * a1 * Dx1 @ x_true + a2 * np.exp(x_true)
 
-def res(x,h):
-    return y_true(h) - h**-2 * A2 @ x - h**-1 * a1 * Dx1 @ x - a2 * np.exp(x)
+def res(x,h,rhs,alpha,lamb):
+    return rhs - (h**-2*A2@x + h**-1*alpha*Dx1@x+ lamb*np.exp(x))
 
-sp_x, sp_y = sp.symbols('sp_x sp_y')
-sp_u = sp.exp(-10*(sp_x**2+sp_y**2))
-sp_f = - sp.diff(sp_u,sp_x,sp_x) - sp.diff(sp_u,sp_y,sp_y) + a1*sp.diff(sp_u,sp_x)  + a2*sp.exp(sp_u)
-lamb_f = sp.lambdify((sp_x,sp_y),sp_f)
-y_manufactured_solution = lamb_f(x1, x2).flatten()
-def res_manufactured_solution(x,h):
-    return y_manufactured_solution - h**-2 * A2 @ x - h**-1 * a1 * Dx1 @ x - a2 * np.exp(x)
+def jac(x,h,rhs,alpha,lamb):
+    return -1*(h**-2 * A2 + h**-1 * alpha * Dx1 + lamb * scipy.sparse.diags(np.exp(x)))
 
-def y_noise(h):
-    y_len = len(y_true(h))
-    # TODO: Scale based on max(y_true)
-    return y_true(h) + np.random.default_rng(seed=42).normal(0,1,y_len)
-def res_noise(x,h):
-    return y_noise(h) - h**-2 * A2 @ x - h**-1 * a1 * Dx1 @ x - a2 * np.exp(x)
-
-def jac(x,h):
-    return - h**-2 * A2 - h**-1 * a1 * Dx1 - a2 * scipy.sparse.diags(np.exp(x))
 
 
 def error(x):
     return np.linalg.norm(x_true - x)
 
 
-def aTa(x,h):
-    return (h**-2*A2 + h**-1*a1 * Dx1).T @ ((h**-2*A2 + h**-1 * a1 * Dx1) @ x)
-
-ATA1 = scipy.sparse.linalg.LinearOperator(((n - 1) ** 2, (n - 1) ** 2), matvec= lambda x:aTa(x,1))
-ATAh = scipy.sparse.linalg.LinearOperator(((n - 1) ** 2, (n - 1) ** 2), matvec= lambda x:aTa(x,h))
+#def aTa(x,h):
+#    return (h**-2*A2 + h**-1*alpha * Dx1).T @ ((h**-2*A2 + h**-1 * alpha * Dx1) @ x)
+#
+#ATA1 = scipy.sparse.linalg.LinearOperator(((n - 1) ** 2, (n - 1) ** 2), matvec= lambda x:aTa(x,1))
+#ATAh = scipy.sparse.linalg.LinearOperator(((n - 1) ** 2, (n - 1) ** 2), matvec= lambda x:aTa(x,h))
 
 
  #def ref_cg(callback):
@@ -75,25 +58,32 @@ ATAh = scipy.sparse.linalg.LinearOperator(((n - 1) ** 2, (n - 1) ** 2), matvec= 
 
 if __name__ == "__main__":
 
-    #x0 = np.zeros_like(x_true)
-    #x0[1] = 1
-    #x0= A_h2.T@y_true+a1*D_x1.T@y_true
-    #x0 = -2*x_true 
     x0 = x_true + 10**-1 * np.ones_like(x_true)
 
+    y_true_h = h**-2 * A2 @ x_true + h**-1 * alpha * Dx1 @ x_true + lamb * np.exp(x_true)
     benchmark(
-        res, x0, jac, error, {"args": (h,), "max_iter": 100, "tol": 1e-12}, title="bratu_pde"
-    )  # ,additional_methods=[ref_cg])
+        res, x0, jac, error, {"args": (h,y_true_h,alpha,lamb), "max_iter": 100, "tol": 1e-12}, title="bratu_pde"
+    ) 
+
+    y_true_1 = A2 @ x_true + alpha * Dx1 @ x_true + lamb * np.exp(x_true)
 
     benchmark(
-        res, x0, jac, error, {"args": (1,), "max_iter": 100, "tol": 1e-12}, title="bratu_pde_h"
+        res, x0, jac, error, {"args": (1,y_true_1,alpha,lamb), "max_iter": 100, "tol": 1e-12}, title="bratu_pde_h"
     )
 
-    benchmark(
-        res_manufactured_solution, x0, jac, error, {"args": (h,), "max_iter": 22, "tol": 1e-12}, title="bratu_manufactured_solution")
+    sp_x, sp_y = sp.symbols('sp_x sp_y')
+    sp_u = sp.exp(-10*(sp_x**2+sp_y**2))
+    sp_f = - sp.diff(sp_u,sp_x,sp_x) - sp.diff(sp_u,sp_y,sp_y) + alpha*sp.diff(sp_u,sp_x)  + lamb*sp.exp(sp_u)
+    lamb_f = sp.lambdify((sp_x,sp_y),sp_f)
+    y_manufactured_solution = lamb_f(x1, x2).flatten()
 
     benchmark(
-        res_noise, x0, jac, error, {"args": (h,), "max_iter": 100, "tol": 1e-12}, title="bratu_noise_")
+        res, x0, jac, error, {"args": (h,y_manufactured_solution,alpha ,lamb), "max_iter": 22, "tol": 1e-12}, title="bratu_manufactured_solution")
+
+    y_noise_h = y_true_h + np.random.default_rng(seed=42).normal(0,1,len(y_true_h))
+    benchmark(
+        res, x0, jac, error, {"args": (h,y_noise_h, alpha, lamb), "max_iter": 100, "tol": 1e-12}, title="bratu_noise_")
+
 # print(f"condition number of A.T@A {np.linalg.cond( ((A_h2+a1*D_x1).T@(A_h2+a1*D_x1)).todense())}")
 # print(f"norm of A.T@A {np.linalg.norm(((A_h2+a1*D_x1).T@(A_h2+a1*D_x1)).todense(),2)}")
 # print(f"condition number of A {np.linalg.cond((A_h2+a1*D_x1).todense())}")
