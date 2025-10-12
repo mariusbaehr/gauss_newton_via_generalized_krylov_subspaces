@@ -46,7 +46,7 @@ def modified_gram_schmidt(
         vector -= (column_dot_vector) * column
 
     vector_norm = np.linalg.norm(vector)
-    if np.isclose(vector_norm, 0, atol=atol):
+    if np.isclose(vector_norm, 0, atol=atol, rtol=0):
         raise GeneralizedKrylowSubspaceBreakdown(
             "Normal residual is allready inside generalized Krylow Subspcae, there for gauss newton krylow algorithm has to proceed without enlarging subspace."
         )
@@ -217,6 +217,14 @@ def gauss_newton_krylow(
             iter % krylow_restart == 0
         ):  # TODO it might be more reasonable to restart based on krylow.basis dimension
             x_coordinate = krylow.start(krylow.x(x_coordinate))
+
+        if ( 
+            krylow.basis.shape[0] == krylow.basis.shape[1]
+        ):
+            print(
+                f"Warning: The genearlized krylow subspace is now identical to the whole parameter space at iteration = {iter}"
+            )
+        print(krylow.basis.shape)
 
     if not success:
         print(
