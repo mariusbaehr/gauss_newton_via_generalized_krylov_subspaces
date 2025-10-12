@@ -37,7 +37,7 @@ if __name__ == "__main__":
     x0_ii = gauss_newton(res, x0, jac, max_iter=155).x
     
     np.random.seed(42)
-    x0_ii = x_exact + 0.01*np.random.normal(loc=0,scale=1,size=p)
+    x0_ii = x_exact + 0.1*np.random.normal(loc=0,scale=1,size=p)
     print(x0_ii)
     benchmark(res, x0_ii, jac, error, {"max_iter": 500}, title="rosenbrock_ii_")
 
