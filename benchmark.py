@@ -106,22 +106,22 @@ def benchmark(res, x0, jac, error, kwargs={}, additional_methods=[], title=None)
         loss_list = [loss(x0)]
         nfev_list = [0]
         if method.__name__ == "ref_method":
-            time = (
-                timeit.timeit(lambda: method(None), number=timeit_number)
-                / timeit_number
-            )
+            #time = (
+            #    timeit.timeit(lambda: method(None), number=timeit_number)
+            #    / timeit_number
+            #)
             method(callback_scipy)
         elif method.__name__ == "ref_cg":
             method(callback_cg)
-            time = None
+            #time = None
         else:
-            time = (
-                timeit.timeit(lambda: method(lambda: None), number=timeit_number)
-                / timeit_number
-            )
+            #time = (
+                #timeit.timeit(lambda: method(lambda: None), number=timeit_number)
+                #/ timeit_number
+            #)
             method(callback)
 
-        print(f"method = {method.__name__} time = {time} ")
+        #print(f"method = {method.__name__} time = {time} ")
 
         nit = len(error_list)
         ax1.semilogy(range(nit), error_list, "x-", label=method.__name__)
