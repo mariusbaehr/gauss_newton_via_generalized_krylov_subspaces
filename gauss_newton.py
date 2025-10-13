@@ -73,7 +73,7 @@ def gauss_newton(
         is_sparse: bool = isinstance(jac_ev, (sp.sparray, sp.spmatrix))
 
         if is_sparse:
-            #descent_direction, _, lsqr_iter, *_ = scipy.sparse.linalg.lsqr( -1.0 * jac_ev, res_ev)
+            #descent_direction, _, cg_iter, *_ = scipy.sparse.linalg.lsqr( -1.0 * jac_ev, res_ev)
             descent_direction, cg_iter = cg_least_squares(-jac_ev, res_ev, x)
         else:
             descent_direction, _, _, _ = scipy.linalg.lstsq(-1 * jac_ev, res_ev)
