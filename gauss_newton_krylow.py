@@ -197,6 +197,7 @@ def gauss_newton_krylow(
             success = True
             break
 
+        jac_ev_old = jac_ev
         jac_ev = krylow.evaluate(jac, x_coordinate, *args)
 
         try:
@@ -204,6 +205,10 @@ def gauss_newton_krylow(
                 krylow.update(jac_ev, res_ev)
             elif version == "res_new":
                 krylow.update(jac_ev, res_ev_new)
+            elif version == "jac_old_res_old":
+                krylow.update(jac_ev_old,res_ev)
+            elif version == "jac_old_res_new":
+                krylow.update(jac_ev_old, res_ev_new)
             else:
                 raise ValueError(
                     "Variable version must be in ['res_old','res_new']"
