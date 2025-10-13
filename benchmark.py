@@ -42,6 +42,13 @@ def benchmark(res, x0, jac, error, kwargs={}, additional_methods=[], title=None)
         loss_list.append(loss(x))
         nfev_list.append(nfev)
 
+    def callback_gn(x, nfev, cg_iter):
+        global error_list, loss_list, nfev_list, cg_iter_list
+        error_list.append(error(x))
+        loss_list.append(loss(x))
+        nfev_list.append(nfev)
+        cg_iter_list.append(cg_iter)
+
     def callback_scipy(intermediate_result):
         global error_list, loss_list, nfev_list
         error_list.append(error(intermediate_result.x))
@@ -73,6 +80,16 @@ def benchmark(res, x0, jac, error, kwargs={}, additional_methods=[], title=None)
             res, x0, jac, callback=callback, version="res_new", **kwargs
         )
 
+    def gnk_iii(callback):
+        return gauss_newton_krylow(
+            res, x0, jac, callback=callback, version="jac_old_res_old", **kwargs
+        )
+
+    def gnk_iv(callback):
+        return gauss_newton_krylow(
+            res, x0, jac, callback=callback, version="jac_old_res_new", **kwargs
+        )
+
     def gnk_ii_restart(callback):
         return gauss_newton_krylow(
             res,
@@ -84,7 +101,7 @@ def benchmark(res, x0, jac, error, kwargs={}, additional_methods=[], title=None)
             **kwargs,
         )
 
-    methods = [ref_method, gnk, gnk_ii_restart, gn, gnk_ii] + additional_methods
+    methods = [ref_method, gnk, gnk_ii_restart, gn, gnk_ii, gnk_iii, gnk_iv] + additional_methods
     # methods = [ref_method, gnk, gn, gnk_new_res] + additional_methods
 
     fig1, ax1 = plt.subplots(figsize=(8, 4), dpi=300)
@@ -96,15 +113,19 @@ def benchmark(res, x0, jac, error, kwargs={}, additional_methods=[], title=None)
     fig3, ax3 = plt.subplots(figsize=(8, 4), dpi=300)
     ax3.set_xlabel("Iterationen")
     ax3.set_ylabel(r"Anzahl $f$ Auswertungen")
+    fig4, ax4 = plt.subplots(figsize=(8, 4), dpi=300)
+    ax4.set_xlabel("Iterationen")
+    ax4.set_ylabel(r"Anzahl CG-Iterationen")
     #    ax1.set_title("Error Plot")
     #    ax2.set_title("Loss Plot")
     #    ax3.set_title("fnev Plot")
     timeit_number = 1
     for method in methods:
-        global error_list, loss_list, nfev_list
+        global error_list, loss_list, nfev_list, cg_iter_list
         error_list = [error(x0)]
         loss_list = [loss(x0)]
         nfev_list = [0]
+        cg_iter_list = [0]
         if method.__name__ == "ref_method":
             #time = (
             #    timeit.timeit(lambda: method(None), number=timeit_number)
@@ -114,6 +135,8 @@ def benchmark(res, x0, jac, error, kwargs={}, additional_methods=[], title=None)
         elif method.__name__ == "ref_cg":
             method(callback_cg)
             #time = None
+        elif method.__name__ == "gn":
+            method(callback_gn)
         else:
             #time = (
                 #timeit.timeit(lambda: method(lambda: None), number=timeit_number)
@@ -127,14 +150,17 @@ def benchmark(res, x0, jac, error, kwargs={}, additional_methods=[], title=None)
         ax1.semilogy(range(nit), error_list, "x-", label=method.__name__)
         ax2.semilogy(range(nit), loss_list, "x-", label=method.__name__)
         ax3.plot(range(nit), nfev_list, "x-", label=method.__name__)
+        ax4.plot(range(len(cg_iter_list)), cg_iter_list, "x-", label=method.__name__)
 
     ax1.legend()
     ax2.legend()
     ax3.legend()
+    ax4.legend()
 
     if not title == None:
         fig1.savefig(title + "error" + ".png", bbox_inches="tight")
         fig2.savefig(title + "loss" + ".png", bbox_inches="tight")
         fig3.savefig(title + "nfev" + ".png", bbox_inches="tight")
+        fig4.savefig(title + "cg_iter" + ".png", bbox_inches="tight")
 
     plt.show()
