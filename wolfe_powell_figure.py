@@ -2,12 +2,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 from numpy.polynomial import Polynomial
 
-plt.rcParams.update({
-    "text.usetex": True,  # aktiviert LaTeX
-    "font.family": "serif",
-    "font.serif": ["Computer Modern"],  # typische LaTeX-Schrift
-    "pgf.rcfonts": False
-})
+plt.rcParams.update(
+    {
+        "text.usetex": True,
+        "font.family": "serif",
+        "font.serif": ["Computer Modern"],
+        "pgf.rcfonts": False,
+    }
+)
 
 sigma = 0.1
 rho = 0.35
@@ -22,7 +24,7 @@ def sufficient_decrease(alpha):
 
 alphas = np.linspace(0, 5, 200)
 
-plt.figure(figsize=(8, 4),dpi=300)
+plt.figure(figsize=(8, 4), dpi=300)
 plt.xlim(-0.5, 5.5)
 plt.ylim(-1.2, 3.5)
 plt.annotate("", xytext=(5.2, 0), xy=(-0.2, 0), arrowprops=dict(arrowstyle="<-"))

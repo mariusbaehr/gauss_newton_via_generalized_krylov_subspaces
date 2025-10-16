@@ -5,12 +5,14 @@ from matplotlib import cm
 from gauss_newton import gauss_newton
 
 
-plt.rcParams.update({
-    "text.usetex": True,  # aktiviert LaTeX
-    "font.family": "serif",
-    "font.serif": ["Computer Modern"],  # typische LaTeX-Schrift
-    "pgf.rcfonts": False
-})
+plt.rcParams.update(
+    {
+        "text.usetex": True,
+        "font.family": "serif",
+        "font.serif": ["Computer Modern"],
+        "pgf.rcfonts": False,
+    }
+)
 
 p = 2
 
@@ -51,7 +53,7 @@ loss_ev = loss_vectorized(x1, x2)
 
 levels = np.linspace(loss_ev.min(), loss_ev.max(), 30)
 
-plt.figure(figsize=(8, 4),dpi=300)
+plt.figure(figsize=(8, 4), dpi=300)
 contourplot = plt.contour(x1, x2, loss_ev, levels=levels, cmap=cm.coolwarm)
 cbar = plt.colorbar(contourplot, label=r"$\mathcal{L}$")
 plt.plot(1, 1, "sk")

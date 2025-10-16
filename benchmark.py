@@ -5,12 +5,14 @@ import numpy as np
 from gauss_newton import gauss_newton
 from gauss_newton_krylow import gauss_newton_krylow
 
-plt.rcParams.update({
-    "text.usetex": True,  # aktiviert LaTeX
-    "font.family": "serif",
-    "font.serif": ["Computer Modern"],  # typische LaTeX-Schrift
-    "pgf.rcfonts": False
-})
+plt.rcParams.update(
+    {
+        "text.usetex": True,
+        "font.family": "serif",
+        "font.serif": ["Computer Modern"],
+        "pgf.rcfonts": False,
+    }
+)
 
 
 def benchmark(res, x0, jac, error, kwargs={}, additional_methods=[], title=None):
@@ -28,11 +30,14 @@ def benchmark(res, x0, jac, error, kwargs={}, additional_methods=[], title=None)
 
     """
     # TODO: make error optional as it is not always available
-    
+
     if "args" in kwargs:
+
         def loss(x):
             return np.sum(res(x, *kwargs["args"]) ** 2)
+
     else:
+
         def loss(x):
             return np.sum(res(x) ** 2)
 
@@ -66,9 +71,14 @@ def benchmark(res, x0, jac, error, kwargs={}, additional_methods=[], title=None)
         return gauss_newton(res, x0, jac, callback=callback, **kwargs)
 
     if "args" in kwargs:
+
         def ref_method(callback):
-            return scipy.optimize.least_squares(res, x0, jac, callback=callback, args=kwargs["args"])
-    else: 
+            return scipy.optimize.least_squares(
+                res, x0, jac, callback=callback, args=kwargs["args"]
+            )
+
+    else:
+
         def ref_method(callback):
             return scipy.optimize.least_squares(res, x0, jac, callback=callback)
 
@@ -101,7 +111,15 @@ def benchmark(res, x0, jac, error, kwargs={}, additional_methods=[], title=None)
             **kwargs,
         )
 
-    methods = [ref_method, gnk, gnk_ii_restart, gn, gnk_ii, gnk_iii, gnk_iv] + additional_methods
+    methods = [
+        ref_method,
+        gnk,
+        gnk_ii_restart,
+        gn,
+        gnk_ii,
+        gnk_iii,
+        gnk_iv,
+    ] + additional_methods
     # methods = [ref_method, gnk, gn, gnk_new_res] + additional_methods
 
     fig1, ax1 = plt.subplots(figsize=(8, 4), dpi=300)
@@ -127,24 +145,24 @@ def benchmark(res, x0, jac, error, kwargs={}, additional_methods=[], title=None)
         nfev_list = [0]
         cg_iter_list = [0]
         if method.__name__ == "ref_method":
-            #time = (
+            # time = (
             #    timeit.timeit(lambda: method(None), number=timeit_number)
             #    / timeit_number
-            #)
+            # )
             method(callback_scipy)
         elif method.__name__ == "ref_cg":
             method(callback_cg)
-            #time = None
+            # time = None
         elif method.__name__ == "gn":
             method(callback_gn)
         else:
-            #time = (
-                #timeit.timeit(lambda: method(lambda: None), number=timeit_number)
-                #/ timeit_number
-            #)
+            # time = (
+            # timeit.timeit(lambda: method(lambda: None), number=timeit_number)
+            # / timeit_number
+            # )
             method(callback)
 
-        #print(f"method = {method.__name__} time = {time} ")
+        # print(f"method = {method.__name__} time = {time} ")
 
         nit = len(error_list)
         ax1.semilogy(range(nit), error_list, "x-", label=method.__name__)

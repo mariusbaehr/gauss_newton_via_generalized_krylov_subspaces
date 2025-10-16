@@ -4,12 +4,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.ticker as ticker
 
-plt.rcParams.update({
-    "text.usetex": True,  # aktiviert LaTeX
-    "font.family": "serif",
-    "font.serif": ["Computer Modern"],  # typische LaTeX-Schrift
-    "pgf.rcfonts": False
-})
+plt.rcParams.update(
+    {
+        "text.usetex": True,
+        "font.family": "serif",
+        "font.serif": ["Computer Modern"],
+        "pgf.rcfonts": False,
+    }
+)
+
 
 def res(x, tau):
     return np.array([x[0] + 1, tau * x[0] ** 2 + x[0] - 1])
@@ -59,7 +62,7 @@ def too_small_steps(res, x, res_ev, jac_ev, args, descent_direction, *_):
 
 
 # Plot
-fig, ax = plt.subplots(1, 2, figsize=(8, 4),dpi=300)
+fig, ax = plt.subplots(1, 2, figsize=(8, 4), dpi=300)
 
 
 x_list = []
@@ -160,7 +163,7 @@ plt.savefig("powell_divergence.png", bbox_inches="tight")
 plt.show()
 
 
-fig, ax = plt.subplots(1, 2, figsize=(8, 4),dpi=300)
+fig, ax = plt.subplots(1, 2, figsize=(8, 4), dpi=300)
 
 x_list = []
 tau = 5

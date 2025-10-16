@@ -14,18 +14,17 @@ def linear_least_squares(A: npt.NDArray, y: npt.NDArray) -> npt.NDArray:
     TODO
     """
 
-    #q,r = np.linalg.qr(A)
-    q,r = scipy.linalg.qr(A, mode='economic')
+    # q,r = np.linalg.qr(A)
+    q, r = scipy.linalg.qr(A, mode="economic")
 
-    
     for r_kk in np.diagonal(r):
-        if np.isclose(r_kk,0, atol= 1E-8):
+        if np.isclose(r_kk, 0, atol=1e-8):
             print("A is rank deficient")
-    x = scipy.linalg.solve_triangular(r,q.T@y)
-    #x= scipy.linalg.solve(r,q.T@y)
-    #TODO: Scipy says r is illconditond, my rank defficiency thest cannot detect this.
+    x = scipy.linalg.solve_triangular(r, q.T @ y)
+    # x= scipy.linalg.solve(r,q.T@y)
+    # TODO: Scipy says r is illconditond, my rank defficiency thest cannot detect this.
 
-    x, _, _, _ = scipy.linalg.lstsq(A,y)
+    x, _, _, _ = scipy.linalg.lstsq(A, y)
     return x
 
 
@@ -93,7 +92,7 @@ class GeneralizedKrylowSubspace:
         self,
         fun: Callable[[npt.NDArray, Tuple[Any]], Union[npt.NDArray, sp.spmatrix]],
         x_coordinate: npt.NDArray,
-        *args: Any
+        *args: Any,
     ) -> Union[npt.NDArray, sp.spmatrix]:
         """
         For evaluating functions such as res or jac on the generalized krylow subspace.
@@ -170,7 +169,7 @@ def gauss_newton_krylow(
         jac_krylow = jac_ev @ krylow.basis
         res_ev = res_ev_new
 
-        #descent_direction, _, _, _ = scipy.linalg.lstsq(-1 * jac_krylow, res_ev)
+        # descent_direction, _, _, _ = scipy.linalg.lstsq(-1 * jac_krylow, res_ev)
         descent_direction = linear_least_squares(-1 * jac_krylow, res_ev)
 
         step_length, res_ev_new, nfev_delta = armijo_goldstein(
@@ -190,7 +189,7 @@ def gauss_newton_krylow(
                 "jac": jac,
                 "step_length": step_length,
                 "nfev": nfev,
-            }
+            },
         )
 
         if step_length**2 * np.sum(descent_direction**2) <= tol**2 * squared_sum_x_prev:
@@ -206,7 +205,7 @@ def gauss_newton_krylow(
             elif version == "res_new":
                 krylow.update(jac_ev, res_ev_new)
             elif version == "jac_old_res_old":
-                krylow.update(jac_ev_old,res_ev)
+                krylow.update(jac_ev_old, res_ev)
             elif version == "jac_old_res_new":
                 krylow.update(jac_ev_old, res_ev_new)
             else:
@@ -223,9 +222,7 @@ def gauss_newton_krylow(
         ):  # TODO it might be more reasonable to restart based on krylow.basis dimension
             x_coordinate = krylow.start(krylow.x(x_coordinate))
 
-        if ( 
-            krylow.basis.shape[0] == krylow.basis.shape[1]
-        ):
+        if krylow.basis.shape[0] == krylow.basis.shape[1]:
             print(
                 f"Warning: The genearlized krylow subspace is now identical to the whole parameter space at iteration = {iter}"
             )

@@ -35,13 +35,13 @@ if __name__ == "__main__":
     benchmark(res, x0, jac, error, {"max_iter": 500}, title="rosenbrock_i_")
 
     x0_ii = gauss_newton(res, x0, jac, max_iter=155).x
-    
+
     np.random.seed(42)
-    x0_ii = x_exact + 0.1*np.random.normal(loc=0,scale=1,size=p)
+    x0_ii = x_exact + 0.1 * np.random.normal(loc=0, scale=1, size=p)
     print(x0_ii)
     benchmark(res, x0_ii, jac, error, {"max_iter": 500}, title="rosenbrock_ii_")
 
-    x0_iii = 2 * x_exact 
+    x0_iii = 2 * x_exact
     benchmark(res, x0_iii, jac, error, {"max_iter": 500}, title="rosenbrock_iii_")
 
     x0_iv = x0_iii.copy()
