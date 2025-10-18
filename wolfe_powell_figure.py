@@ -69,32 +69,33 @@ def curvature_condition(alpha):
 plt.plot(
     alphas[:48],
     curvature_condition(alphas)[:48],
-    label=r"$\mathcal{L}(\alpha''')+\rho\alpha\mathcal{L}'(0)$",
+    label=r"$\mathcal{L}(\alpha'')+\rho\alpha\mathcal{L}'(0)$",
+    color="tab:green"
 )
 plt.plot(
-    [point, 5], [-0.5, -0.5], lw=5, label="Krümmungsbedingnung", color="tab:orange"
+    [point, 5], [-0.5, -0.5], lw=5, label="Krümmungsbedingnung", color="tab:green"
 )
 plt.plot(point, loss(point), "ko")
-plt.text(point, loss(point) + 0.1, r"$\alpha'''$")
+plt.text(point, loss(point) + 0.1, r"$\alpha''$")
 
-alpha_prime2 = (slope_loss - slope_loss(0) * sigma).roots()
-print(alpha_prime2)
-point = alpha_prime2[0].real
-
-
-def alpha_prime2_line(alpha):
-    return loss(point) + slope_loss(0) * sigma * (alpha - point)
-
-
-plt.plot(
-    alphas[:114],
-    alpha_prime2_line(alphas)[:114],
-    linestyle="--",
-    color="tab:gray",
-    label=r"$\mathcal{L}(\alpha'')+\rho\alpha\mathcal{L}'(0)$",
-)
-plt.plot(point, loss(point), "o", color="tab:gray")
-plt.text(point, loss(point) + 0.1, r"$\alpha''$", color="tab:gray")
+#The folowing was used in an earlyer version to aid a proof
+#alpha_prime2 = (slope_loss - slope_loss(0) * sigma).roots()
+#print(alpha_prime2)
+#point = alpha_prime2[0].real
+#
+#def alpha_prime2_line(alpha):
+#    return loss(point) + slope_loss(0) * sigma * (alpha - point)
+#
+#
+#plt.plot(
+#    alphas[:114],
+#    alpha_prime2_line(alphas)[:114],
+#    linestyle="--",
+#    color="tab:gray",
+#    label=r"$\mathcal{L}(\alpha'')+\rho\alpha\mathcal{L}'(0)$",
+#)
+#plt.plot(point, loss(point), "o", color="tab:gray")
+#plt.text(point, loss(point) + 0.1, r"$\alpha''$", color="tab:gray")
 
 plt.legend(loc="upper left", bbox_to_anchor=(1, 1))
 plt.subplots_adjust(right=0.75)
