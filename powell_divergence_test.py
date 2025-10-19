@@ -23,7 +23,7 @@ def jac(x, tau):
 
 
 def loss(x, tau):
-    return np.sum(res(x, tau) ** 2)
+    return 1/2*np.sum(res(x, tau) ** 2)
 
 
 x0 = np.array([1.0])
