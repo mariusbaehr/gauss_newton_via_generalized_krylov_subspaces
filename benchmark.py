@@ -34,12 +34,12 @@ def benchmark(res, x0, jac, error, kwargs={}, additional_methods=[], title=None)
     if "args" in kwargs:
 
         def loss(x):
-            return np.sum(res(x, *kwargs["args"]) ** 2)
+            return 1/2*np.sum(res(x, *kwargs["args"]) ** 2)
 
     else:
 
         def loss(x):
-            return np.sum(res(x) ** 2)
+            return 1/2*np.sum(res(x) ** 2)
 
     def callback(x, nfev):
         global error_list, loss_list, nfev_list

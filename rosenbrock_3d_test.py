@@ -37,7 +37,7 @@ def jac(x):
 
 
 def loss(x):
-    return np.sum(res(x) ** 2)
+    return 1/2*np.sum(res(x) ** 2)
 
 
 @np.vectorize

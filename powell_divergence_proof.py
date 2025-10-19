@@ -4,7 +4,7 @@ x, tau = sp.symbols("x tau")
 
 r = sp.Matrix([[x + 1], [tau * x**2 + x - 1]])
 
-loss = r[0, 0] ** 2 + r[1, 0] ** 2
+loss = 1/2*(r[0, 0] ** 2 + r[1, 0] ** 2)
 critical_points = sp.roots(sp.diff(loss, x), x)
 print(
     f"critical points of loss: {critical_points}"
