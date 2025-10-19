@@ -34,7 +34,7 @@ plt.axis("off")
 loss_ev = loss(alphas)
 sufficient_decrease_ev = sufficient_decrease(alphas)
 plt.plot(alphas, loss(alphas), color="black", label=r"$\mathcal{L}(x+\alpha d)$")
-plt.plot(alphas, sufficient_decrease_ev, label=r"$t(\alpha)$")
+plt.plot(alphas, sufficient_decrease_ev, label=r"$\mathcal{L}(x)+\sigma \alpha \mathcal{L}'(x)d$")
 
 sufficient_decrease_equality = (
     loss
@@ -50,12 +50,12 @@ plt.plot(
     label="Hinreichenden Abstiegsbedingung",
 )
 plt.plot(sufficient_decrease_equality[2:], [-1, -1], lw=5, color="tab:blue")
-plt.text(
-    sufficient_decrease_equality[1],
-    loss(sufficient_decrease_equality[1]) + 0.1,
-    r"$\alpha'$",
-)
-plt.plot(sufficient_decrease_equality[1], loss(sufficient_decrease_equality[1]), "ko")
+#plt.text(
+#    sufficient_decrease_equality[1],
+#    loss(sufficient_decrease_equality[1]) + 0.1,
+#    r"$\alpha'$",
+#)
+#plt.plot(sufficient_decrease_equality[1], loss(sufficient_decrease_equality[1]), "ko")
 
 curvature_condition_equality = (slope_loss - slope_loss(0) * rho).roots()
 print(curvature_condition_equality)
@@ -69,14 +69,14 @@ def curvature_condition(alpha):
 plt.plot(
     alphas[:48],
     curvature_condition(alphas)[:48],
-    label=r"$\mathcal{L}(\alpha'')+\rho\alpha\mathcal{L}'(0)$",
+    label=r"$\mathcal{L}(x+\alpha'd)+\rho\alpha\mathcal{L}'(0)$",
     color="tab:green"
 )
 plt.plot(
     [point, 5], [-0.5, -0.5], lw=5, label="Krümmungsbedingnung", color="tab:green"
 )
 plt.plot(point, loss(point), "ko")
-plt.text(point, loss(point) + 0.1, r"$\alpha''$")
+plt.text(point, loss(point) + 0.1, r"$\alpha'$")
 
 #The folowing was used in an earlyer version to aid a proof
 #alpha_prime2 = (slope_loss - slope_loss(0) * sigma).roots()
@@ -96,6 +96,8 @@ plt.text(point, loss(point) + 0.1, r"$\alpha''$")
 #)
 #plt.plot(point, loss(point), "o", color="tab:gray")
 #plt.text(point, loss(point) + 0.1, r"$\alpha''$", color="tab:gray")
+plt.text(5,0.1,r"$\alpha$",va="bottom")
+plt.text(0,3.2,r"$\mathcal{L}(x+\alpha d)$",ha="left")
 
 plt.legend(loc="upper left", bbox_to_anchor=(1, 1))
 plt.subplots_adjust(right=0.75)
