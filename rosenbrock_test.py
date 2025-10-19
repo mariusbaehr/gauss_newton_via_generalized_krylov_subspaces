@@ -8,7 +8,7 @@ p = 100  # N=2p-2, again not a classical regression model, however
 def res(x):
     block1 = 10 * (x[1:] - x[:-1] ** 2)
     block2 = 1 - x[:-1]
-    return np.concatenate([block1, block2])
+    return 2**0.5*np.concatenate([block1, block2])
 
 
 def jac(x):
@@ -16,7 +16,7 @@ def jac(x):
         x[:-1], shape=(p - 1, p)
     )
     block2 = -scipy.sparse.eye(p - 1, p, k=0)
-    return scipy.sparse.block_array([[block1], [block2]])
+    return 2**0.5*scipy.sparse.block_array([[block1], [block2]])
 
 
 x_exact = np.ones(p)
