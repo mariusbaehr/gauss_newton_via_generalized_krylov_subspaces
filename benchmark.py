@@ -90,9 +90,7 @@ def benchmark(res, x0, jac, error, kwargs={}, additional_methods=[], title=None)
             res, x0, jac, callback=callback, version="res_new", **kwargs
         )
 
-    def gnk_iii(callback):
-        return gauss_newton_krylow(
-            res, x0, jac, callback=callback, version="jac_old_res_old", **kwargs
+    def gnk_iii(callback): return gauss_newton_krylow( res, x0, jac, callback=callback, version="jac_old_res_old", **kwargs
         )
 
     def gnk_iv(callback):
@@ -100,25 +98,16 @@ def benchmark(res, x0, jac, error, kwargs={}, additional_methods=[], title=None)
             res, x0, jac, callback=callback, version="jac_old_res_new", **kwargs
         )
 
-    def gnk_ii_restart(callback):
-        return gauss_newton_krylow(
-            res,
-            x0,
-            jac,
-            callback=callback,
-            krylow_restart=20,
-            version="res_new",
-            **kwargs,
-        )
+    #def gnk_ii_restart(callback): return gauss_newton_krylow( res, x0, jac, callback=callback, krylow_restart=20, version="res_new", **kwargs,)
 
     methods = [
         ref_method,
         gnk,
-        gnk_ii_restart,
+        #gnk_ii_restart,
         gn,
         gnk_ii,
-        gnk_iii,
-        gnk_iv,
+        #gnk_iii,
+        #gnk_iv,
     ] + additional_methods
     # methods = [ref_method, gnk, gn, gnk_new_res] + additional_methods
 
