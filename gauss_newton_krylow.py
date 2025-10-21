@@ -21,10 +21,10 @@ def linear_least_squares(A: npt.NDArray, y: npt.NDArray) -> npt.NDArray:
         if np.isclose(r_kk, 0, atol=1e-8):
             print("A is rank deficient")
     x = scipy.linalg.solve_triangular(r, q.T @ y)
-    # x= scipy.linalg.solve(r,q.T@y)
+    #x = scipy.linalg.solve(r,q.T@y)
     # TODO: Scipy says r is illconditond, my rank defficiency thest cannot detect this.
 
-    x, _, _, _ = scipy.linalg.lstsq(A, y)
+    #x, _, _, _ = scipy.linalg.lstsq(A, y)
     return x
 
 
@@ -58,6 +58,9 @@ def modified_gram_schmidt(
 class GeneralizedKrylowSubspaceBreakdown(Exception):
     pass  # TODO: Not shure if Error is apropriate, as it could naturaly happen
     # TODO: Maybe add error message here
+
+class GeneralizedKrylowSubspaceSpansEntireSpace(Exception):
+    pass
 
 
 class GeneralizedKrylowSubspace:
@@ -102,6 +105,10 @@ class GeneralizedKrylowSubspace:
     def update(
         self, jac_ev: Union[npt.NDArray, sp.spmatrix], res_ev: npt.NDArray
     ) -> None:
+
+        if self.basis.shape[0] == self.basis.shape[1]:
+            raise GeneralizedKrylowSubspaceSpansEntireSpace
+
         #        ATA=self.basis.T @ self.basis
         #        ATA-= np.eye(ATA.shape[0])
         #        print(np.linalg.norm(ATA, ord=inf)) # Changed ord to inf
@@ -214,19 +221,18 @@ def gauss_newton_krylow(
                 )  # TODO Check before hand
 
             x_coordinate = np.append(x_coordinate, 0)
-        except GeneralizedKrylowSubspaceBreakdown:
+        except GeneralizedKrylowSubspaceBreakdown: #TODO warnings
             pass
+
+        except GeneralizedKrylowSubspaceSpansEntireSpace: #TODO warnings
+            print(
+                f"Warning: The genearlized krylow subspace is now identical to the whole parameter space at iteration = {iter}"
+            )
 
         if (
             iter % krylow_restart == 0
         ):  # TODO it might be more reasonable to restart based on krylow.basis dimension
             x_coordinate = krylow.start(krylow.x(x_coordinate))
-
-        if krylow.basis.shape[0] == krylow.basis.shape[1]:
-            print(
-                f"Warning: The genearlized krylow subspace is now identical to the whole parameter space at iteration = {iter}"
-            )
-        print(krylow.basis.shape)
 
     if not success:
         print(
