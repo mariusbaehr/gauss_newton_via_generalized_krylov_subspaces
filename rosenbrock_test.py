@@ -25,26 +25,21 @@ x_exact = np.ones(p)
 def error(x):
     return np.linalg.norm(x - x_exact)
 
-
-from gauss_newton import gauss_newton
-
 if __name__ == "__main__":
 
-    x0 = np.zeros(p)
-    x0[0] = -0.5  # Because zero is not allowed in gauss_newton_krylow
-    benchmark(res, x0, jac, error, {"max_iter": 500}, title="rosenbrock_i_")
-
-    x0_ii = gauss_newton(res, x0, jac, max_iter=155).x
+#    x0 = np.zeros(p)
+#    x0[0] = -0.5  # Because zero is not allowed in gauss_newton_krylow
+#    benchmark(res, x0, jac, error, {"max_iter": 500}, title="rosenbrock_i_")
 
     np.random.seed(42)
-    x0_ii = x_exact + 0.1 * np.random.normal(loc=0, scale=1, size=p)
-    print(x0_ii)
+    x0_i = x_exact + 0.1 * np.random.normal(loc=0, scale=1, size=p)
+    print(x0_i)
+    benchmark(res, x0_i, jac, error, {"max_iter": 500}, title="rosenbrock_i_")
+
+    x0_ii = 2 * x_exact
     benchmark(res, x0_ii, jac, error, {"max_iter": 500}, title="rosenbrock_ii_")
 
-    x0_iii = 2 * x_exact
+    x0_iii = x0_ii.copy()
+    x0_iii[0] = 1
+
     benchmark(res, x0_iii, jac, error, {"max_iter": 500}, title="rosenbrock_iii_")
-
-    x0_iv = x0_iii.copy()
-    x0_iv[0] = 1
-
-    benchmark(res, x0_iv, jac, error, {"max_iter": 500}, title="rosenbrock_iv_")
