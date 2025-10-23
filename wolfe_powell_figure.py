@@ -47,7 +47,7 @@ plt.plot(
     [-1, -1],
     lw=5,
     color="tab:blue",
-    label="Hinreichenden Abstiegsbedingung",
+    label="Hinreichende Abstiegsbedingung",
 )
 plt.plot(sufficient_decrease_equality[2:], [-1, -1], lw=5, color="tab:blue")
 #plt.text(
@@ -101,5 +101,5 @@ plt.text(0,3.2,r"$\mathcal{L}(x+\alpha d)$",ha="left")
 
 plt.legend(loc="upper left", bbox_to_anchor=(1, 1))
 plt.subplots_adjust(right=0.75)
-plt.savefig("wolfe_powell.png", bbox_inches="tight")
+plt.savefig("wolfe_powell.pdf", bbox_inches="tight")
 plt.show()
