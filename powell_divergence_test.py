@@ -155,11 +155,12 @@ ax[0].text(
 ax[0].set_xlabel("$x$")
 ax[0].set_ylabel(r"$\mathcal{L}$")
 ax[1].set_xlabel("Iteration")
-ax[1].set_ylabel("Fehler")
+ax[1].set_ylabel(r"Fehler $\log \|x_k-x^\ast\|$")
 ax[0].legend()
 ax[1].legend()
 ax[1].xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
-plt.savefig("powell_divergence.png", bbox_inches="tight")
+plt.tight_layout()
+plt.savefig("powell_divergence.pdf", bbox_inches="tight")
 plt.show()
 
 
@@ -177,7 +178,7 @@ def error_list(x_list):
     return np.abs(x_exact - x_list)
 
 
-x_min = 0
+x_min = -0.2 # To see that 0 is local maximum
 x_max = 0
 
 step_length_controls = [armijo_goldstein, no_step_length_control]
@@ -224,8 +225,9 @@ ax[0].plot(
 ax[0].set_xlabel("$x$")
 ax[0].set_ylabel(r"$\mathcal{L}$")
 ax[1].set_xlabel("Iteration")
-ax[1].set_ylabel("Fehler")
+ax[1].set_ylabel(r"Fehler $\log \|x_k-x^\ast\|$")
 ax[0].legend()
 ax[1].legend()
-plt.savefig("powell_convergence.png", bbox_inches="tight")
+plt.tight_layout()
+plt.savefig("powell_convergence.pdf", bbox_inches="tight")
 plt.show()
