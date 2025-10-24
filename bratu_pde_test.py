@@ -68,23 +68,14 @@ def make_res(y,A2,Dx1, alpha, lamb):
 
 def make_jac(A2, Dx1, alpha, lamb):
     return lambda x : -1 * ( A2 + alpha*Dx1 + lamb * scipy.sparse.diags(np.exp(x)))
+    
 
 def make_error(x_true):
     return lambda x:np.linalg.norm(x_true - x)
 
 
-def cg_ref(res, x0, jac, args, callback, **kwargs):
-    def cb_cg(x):
-        callback(x,None,None)
-    def aTa(x):
-        return jac(x,*args).T@(jac(x,*args)@x) #TODO: stimmt hier jac???
-            #TODO: Mij jac ist das doof, vorallem ist ja x egal
 
-    N = args[0]
 
-    ATA = scipy.sparse.linalg.LinearOperator(((N - 1) ** 2, (N - 1) ** 2),  aTa)
-
-    scipy.sparse.linalg.cg(ATA, x0, callback=cb_cg)
 
 def compare():
     N = 101
@@ -169,28 +160,43 @@ def compare_linear():
 
 def compare_linear_small():
     N = 25
-    alpha = 5
+    alpha = 0
     lamb = 0
 
     problem = make_problem(N)
-    A2, Dx1, x_true = problem["A2"], problem["Dx1"], problem["x_true"]
+    A2, Dx1, x_true, N = problem["A2"], problem["Dx1"], problem["x_true"], problem["N"]
+
+    def cg_ref(res, x0, jac, args, callback):
+        def cb_cg(x):
+            callback(x,None,None)
+        def aTa(x):
+            return (A2+alpha*Dx1).T@((A2+alpha*Dx1)@x)
+        ATA = scipy.sparse.linalg.LinearOperator(((N-1)**2,(N-1)**2),aTa)
+        scipy.sparse.linalg.cg(ATA, x0, callback=cb_cg)
+
+
     
     y = pde_operator(x_true, A2, Dx1, alpha, lamb)
     res = make_res(y, A2, Dx1, alpha, lamb)
     jac = make_jac(A2, Dx1, alpha, lamb)
     error = make_error(x_true)
-    x0 = x_true + 10**-1 * np.ones_like(x_true)
+
+    x0 = -1*jac(np.zeros((N-1)**2)).T @ y # Note that jac is constant
+    print(len(x0))
+    print(jac(x0).shape)
 
     gn_data = benchmark_method(gauss_newton, res, x0, jac, error)
     gnk_data = benchmark_method(gauss_newton_krylow, res, x0, jac, error, kwargs = {"max_iter":100})
     gnk_ii_data = benchmark_method(gauss_newton_krylow, res, x0, jac, error, kwargs = {"version":"res_new", "max_iter":100})
     ref_data = benchmark_method(ref_method, res, x0, jac, error)
+    cg_data = benchmark_method(cg_ref, res, x0, jac, error)
 
     plt.figure(figsize=(8,4), dpi =300)
     plt.semilogy(gn_data[0],"-x",label="gn")
     plt.semilogy(gnk_data[0],"-x",label="gnk")
-    plt.semilogy(gnk_ii_data[0],"-x",label="gnk_ii")
+    plt.semilogy(gnk_ii_data[0],"-+",label="gnk_ii")
     plt.semilogy(ref_data[0],"-x",label="ref")
+    plt.semilogy(cg_data[0],"--x",label="cg")
     plt.xlabel("Iterationen")
     plt.ylabel(r"Fehler $\log\|x_k-x^\ast\|$")
     plt.legend()
@@ -199,9 +205,9 @@ def compare_linear_small():
 
 if __name__ == "__main__":
 
-    compare()
-    compare_without_scaling()
-
+    #compare()
+    #compare_without_scaling()
+    compare_linear_small()
 
 
 #    benchmark(
