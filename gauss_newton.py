@@ -48,12 +48,11 @@ def gauss_newton(
     res: The residual function, called as res(x, *args) the argument x and its return must always be ndarrays.
     x0: Initial guess of the regression parameters.
     jac: Called as jac(x, *args), should return either a NDArray or a spmatrix, if returned a spmatrix a sparse solver is used to solve the linearised equation.
-    args:
-    tol:
-    max_iter:
+    args: Additional arguments passed to res and jac.
+    tol: Tolerance for termination by the change of the paramters x.
+    max_iter: Maximum number of iterations.
     step_length_control: Only for demonstrational purposes
-    callback: Called as callback with the following possible positional arguments: x, iter, jac, rank_jac, step_length
-
+    callback: Called as callback with the following possible positional arguments: x, iter, jac, rank_jac, step_length, cg_iter. Implementet arguments are automaticaly determined by call_callback.
 
     Returns
     -------
@@ -77,7 +76,7 @@ def gauss_newton(
 
         if is_sparse:
             # descent_direction, _, cg_iter, *_ = scipy.sparse.linalg.lsqr( -1.0 * jac_ev, res_ev)
-            descent_direction, cg_iter = cg_least_squares(-jac_ev, res_ev, x)
+            descent_direction, cg_iter = cg_least_squares(-1*jac_ev, res_ev, x)
         else:
             descent_direction, _, _, _ = scipy.linalg.lstsq(-1 * jac_ev, res_ev)
 
