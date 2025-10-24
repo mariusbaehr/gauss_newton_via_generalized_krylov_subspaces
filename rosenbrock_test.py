@@ -1,10 +1,18 @@
 import numpy as np
 import scipy.sparse
 import matplotlib.pyplot as plt
-from benchmark import benchmark
-from newbenchmark import benchmark_method, ref_method
+from benchmark import benchmark_method, ref_method
 from gauss_newton import gauss_newton
 from gauss_newton_krylow import gauss_newton_krylow
+
+plt.rcParams.update(
+    {
+        "text.usetex": True,
+        "font.family": "serif",
+        "font.serif": ["Computer Modern"],
+        "pgf.rcfonts": False,
+    }
+)
 
 p = 100  # N=2p-2, again not a classical regression model, however
 
@@ -124,5 +132,4 @@ if __name__ == "__main__":
     compare_error_i()
     compare_error_ii()
     compare_error_iii()
-
 
