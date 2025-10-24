@@ -11,20 +11,24 @@ import scipy
 
 def linear_least_squares(A: npt.NDArray, y: npt.NDArray) -> npt.NDArray:
     """
-    TODO
+    Calculates least squares solution of linear problem e.g. ||y-Ax||.
+
+    Parameters
+    ----------
+    A: Matrice.
+    y: Vector.
+
+    Returns
+    -------
+    x: Linear least squares solution.
     """
 
-    # q,r = np.linalg.qr(A)
     q, r = scipy.linalg.qr(A, mode="economic")
 
     for r_kk in np.diagonal(r):
         if np.isclose(r_kk, 0, atol=1e-8):
             print("A is rank deficient")
     x = scipy.linalg.solve_triangular(r, q.T @ y)
-    #x = scipy.linalg.solve(r,q.T@y)
-    # TODO: Scipy says r is illconditond, my rank defficiency thest cannot detect this.
-
-    #x, _, _, _ = scipy.linalg.lstsq(A, y)
     return x
 
 
@@ -32,15 +36,20 @@ def modified_gram_schmidt(
     basis: npt.NDArray, vector: npt.NDArray, atol=1e-10
 ) -> npt.NDArray:  # TODO: Add tol
     """
-    TODO
+    Orthonormalize vector with respect to orthonormal basis.
+
+    Parameters
+    ----------
+    basis: Basis vectores are stored as colums.
+    vector: Vector which should be orthogonalized.
+    atol: If ||vector||<atol, vector is considert linear depended of basis, hence method will stop there and raise GeneralizedKrylowSubspaceBreakdown Exception. 
+
+    Returns
+    -------
+    vector: Orthonormalized vector.
     """
     for column in basis.T:
         column_dot_vector = np.dot(column, vector)
-
-        #       if np.isclose(column_dot_vector, 0, atol=atol):
-        #           raise GeneralizedKrylowSubspaceBreakdown(
-        #               "Normal residual is allready inside generalized Krylow Subspcae, there for gauss newton krylow algorithm has to proceed without enlarging subspace."
-        #           )
 
         vector -= (column_dot_vector) * column
 
@@ -109,11 +118,7 @@ class GeneralizedKrylowSubspace:
         if self.basis.shape[0] == self.basis.shape[1]:
             raise GeneralizedKrylowSubspaceSpansEntireSpace
 
-        #        ATA=self.basis.T @ self.basis
-        #        ATA-= np.eye(ATA.shape[0])
-        #        print(np.linalg.norm(ATA, ord=inf)) # Changed ord to inf
         normal_res = -jac_ev.T @ res_ev
-        # normal_res -= self.basis @ ( self.basis.T @ normal_res)
 
         try:
             normal_res = modified_gram_schmidt(
@@ -143,12 +148,13 @@ def gauss_newton_krylow(
     ----------
     res: The residual function, called as res(x, *args) the argument x and its return must always be ndarrays.
     x0: Initial guess of the regression parameters.
-    jac:
+    jac: Jacobian of residual function, called as jac(x, *args).
     krylow_restart: If the krylow_basis gets larger than krylow_restart the basis is reset, if left to None basis never resets.
     args: Additional arguments passed to res and jac.
     tol: Tolerance for termination by the change of the paramters x.
     max_iter: Maximum number of iterations.
-    callback: Called as callback with the following possible positional arguments: x, iter, jac, rank_jac, step_length, nfev. Implementet arguments are automaticaly determined by call_callback.
+    callback: Called as callback with the following possible positional arguments: x, iter, jac, rank_jac, step_length, nfev, cg_iter. Implementet arguments are automaticaly determined by call_callback. cg_iter was only added to be consitent with gauss_newton callback.
+    version: Must be one of ['res_old','res_new','jac_old_res_old','jac_old_res_new']. The generalized Krylow supspace will be expanded with -jac(x_new).T@res(x_old), -jac(x_new).T@res(x_new), -jac(x_old).T@res(x_old), -jac(x_old).T@res(x_new). Defaults to 'res_old' as suggested in "An Efficient Implementation of the Gauss–Newton Method Via Generalized Krylow Subspaces", we recomend 'res_new' however.
 
     Returns
     -------
@@ -218,7 +224,7 @@ def gauss_newton_krylow(
                 krylow.update(jac_ev_old, res_ev_new)
             else:
                 raise ValueError(
-                    "Variable version must be in ['res_old','res_new']"
+                    "Variable version must be in ['res_old','res_new','jac_old_res_old','jac_old_res_new']"
                 )  # TODO Check before hand
 
             x_coordinate = np.append(x_coordinate, 0)
