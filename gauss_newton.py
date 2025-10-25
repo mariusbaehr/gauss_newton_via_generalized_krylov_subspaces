@@ -17,8 +17,19 @@ def cg_least_squares(
     preconditioner=True,
 ) -> Tuple[npt.NDArray, int]:
     """
-    Iteratvie solver for least squares problem
+    Iteratvie solver for least squares problem. For iterative minimization of ||y-A@x|| via the cg-method.
 
+    Parameters
+    ----------
+    A: Matrice.
+    y: Vector.
+    x0: Starting guess for the solution.
+    cg_rtol: Tolerance for termination ||y-A@x||<= cg_rtol * ||y||
+    preconditioner: Use the jacobi preconditioner.
+
+    Returns
+    -------
+    x: Approximate solution
 
     """
     p = A.shape[1]
