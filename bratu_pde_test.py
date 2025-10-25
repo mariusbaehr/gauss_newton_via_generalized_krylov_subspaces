@@ -61,19 +61,22 @@ def make_problem(N, h=None, A=-3, B = 3, u = lambda x1,x2: np.exp(-10 * (x1**2+x
             }
 
 def pde_operator(x, A2, Dx1, alpha, lamb):
+    if lamb == 0:
+        return (A2@x + alpha*Dx1@x)
     return (A2@x + alpha*Dx1@x + lamb*np.exp(x))
 
 def make_res(y,A2,Dx1, alpha, lamb):
     return lambda x: y- pde_operator(x, A2, Dx1, alpha, lamb)
 
 def make_jac(A2, Dx1, alpha, lamb):
+    if lamb == 0:
+        return lambda x : -1 * (A2 + alpha*Dx1)
+        
     return lambda x : -1 * ( A2 + alpha*Dx1 + lamb * scipy.sparse.diags(np.exp(x)))
     
 
 def make_error(x_true):
     return lambda x:np.linalg.norm(x_true - x)
-
-
 
 
 
@@ -151,16 +154,94 @@ def compare_manufactured_solution():
     lamb_f = sp.lambdify((sp_x,sp_y),sp_f)
     y = lamb_f(*grid).flatten('F')
 
+    res = make_res(y, A2, Dx1, alpha, lamb)
+    jac = make_jac(A2, Dx1, alpha, lamb)
+    error = make_error(x_true)
+    x0 = x_true + 10**-1 * np.ones_like(x_true)
 
-    pass
+    gn_data = benchmark_method(gauss_newton, res, x0, jac, error)
+    gnk_data = benchmark_method(gauss_newton_krylow, res, x0, jac, error, kwargs = {"max_iter":100})
+    gnk_ii_data = benchmark_method(gauss_newton_krylow, res, x0, jac, error, kwargs = {"version":"res_new", "max_iter":100})
+    ref_data = benchmark_method(ref_method, res, x0, jac, error)
+
+    plt.figure(figsize=(8,4), dpi =300)
+    plt.semilogy(gn_data[0],"-x",label="gn")
+    plt.semilogy(gnk_data[0],"-x",label="gnk")
+    plt.semilogy(gnk_ii_data[0],"-x",label="gnk_ii")
+    plt.semilogy(ref_data[0],"-x",label="ref")
+    plt.xlabel("Iterationen")
+    plt.ylabel(r"Fehler $\log\|x_k-x^\ast\|$")
+    plt.legend()
+    plt.show()
+
 
 def compare_linear():
-    pass
+    N = 101
+    alpha = 5
+    lamb = 0
+
+    problem = make_problem(N,h=None)
+    A2, Dx1, x_true, N = problem["A2"], problem["Dx1"], problem["x_true"], problem["N"]
+
+    def cg_ref(res, x0, jac, args, callback):
+        def cb_cg(x):
+            callback(x,None,None)
+        def aTa(x):
+            return (A2+alpha*Dx1).T@((A2+alpha*Dx1)@x)
+        ATA = scipy.sparse.linalg.LinearOperator(((N-1)**2,(N-1)**2),aTa)
+        scipy.sparse.linalg.cg(ATA, x0, callback=cb_cg)
+
+
+    
+    y = pde_operator(x_true, A2, Dx1, alpha, lamb)
+    res = make_res(y, A2, Dx1, alpha, lamb)
+    jac = make_jac(A2, Dx1, alpha, lamb)
+    error = make_error(x_true)
+
+    x0 = -1*jac(np.zeros((N-1)**2)).T @ y # Note that jac is constant
+
+    gn_data = benchmark_method(gauss_newton, res, x0, jac, error)
+    gn_no_preconditioner_data = benchmark_method(gauss_newton, res, x0, jac, error, kwargs = {"cg_preconditioner":False})
+    gnk_data = benchmark_method(gauss_newton_krylow, res, x0, jac, error, kwargs = {"max_iter":100})
+    gnk_ii_data = benchmark_method(gauss_newton_krylow, res, x0, jac, error, kwargs = {"version":"res_new", "max_iter":100})
+    ref_data = benchmark_method(ref_method, res, x0, jac, error)
+    cg_data = benchmark_method(cg_ref, res, x0, jac, error)
+
+    plt.figure(figsize=(8,4), dpi =300)
+    plt.semilogy(gn_data[0],"-x",label="gn")
+    plt.semilogy(gnk_data[0],"-x",label="gnk")
+    plt.semilogy(gnk_ii_data[0],"-+",label="gnk_ii")
+    plt.semilogy(ref_data[0],"-x",label="ref")
+    plt.semilogy(cg_data[0],"-x",label="cg")
+    plt.xlabel("Iterationen")
+    plt.ylabel(r"Fehler $\log\|x_k-x^\ast\|$")
+    plt.legend()
+    plt.show()
+
+    plt.figure(figsize=(9,4), dpi =300)
+    plt.plot(gn_data[2],"-x",label="gn")
+    plt.plot(gnk_data[2],"-x",label="gnk")
+    plt.plot(gnk_ii_data[2],"-+",label="gnk_ii")
+    plt.plot(ref_data[2],"-x",label="ref")
+    plt.plot(cg_data[2],"-x",label="cg")
+    plt.xlabel("Iterationen")
+    plt.ylabel(r"Funktionsauswertungen")
+    plt.legend()
+    plt.show()
+
+    plt.figure(figsize=(8,4), dpi =300)
+    plt.plot(gn_data[3],"-x",label="gn")
+    plt.plot(gn_no_preconditioner_data[3], "-x",label="gn no prec")
+    plt.xlabel("Iterationen")
+    plt.ylabel(r"CG Iterationen pro Iteration")
+    plt.legend()
+    plt.show()
+
 
 
 def compare_linear_small():
     N = 25
-    alpha = 0
+    alpha = 5
     lamb = 0
 
     problem = make_problem(N)
@@ -182,8 +263,6 @@ def compare_linear_small():
     error = make_error(x_true)
 
     x0 = -1*jac(np.zeros((N-1)**2)).T @ y # Note that jac is constant
-    print(len(x0))
-    print(jac(x0).shape)
 
     gn_data = benchmark_method(gauss_newton, res, x0, jac, error)
     gnk_data = benchmark_method(gauss_newton_krylow, res, x0, jac, error, kwargs = {"max_iter":100})
@@ -196,9 +275,27 @@ def compare_linear_small():
     plt.semilogy(gnk_data[0],"-x",label="gnk")
     plt.semilogy(gnk_ii_data[0],"-+",label="gnk_ii")
     plt.semilogy(ref_data[0],"-x",label="ref")
-    plt.semilogy(cg_data[0],"--x",label="cg")
+    plt.semilogy(cg_data[0],"-x",label="cg")
     plt.xlabel("Iterationen")
     plt.ylabel(r"Fehler $\log\|x_k-x^\ast\|$")
+    plt.legend()
+    plt.show()
+
+    plt.figure(figsize=(9,4), dpi =300)
+    plt.plot(gn_data[2],"-x",label="gn")
+    plt.plot(gnk_data[2],"-x",label="gnk")
+    plt.plot(gnk_ii_data[2],"-+",label="gnk_ii")
+    plt.plot(ref_data[2],"-x",label="ref")
+    plt.plot(cg_data[2],"-x",label="cg")
+    plt.xlabel("Iterationen")
+    plt.ylabel(r"Funktionsauswertungen")
+    plt.legend()
+    plt.show()
+
+    plt.figure(figsize=(8,4), dpi =300)
+    plt.plot(gn_data[3],"-x",label="gn")
+    plt.xlabel("Iterationen")
+    plt.ylabel(r"CG Iterationen pro Iteration")
     plt.legend()
     plt.show()
 
@@ -207,37 +304,8 @@ if __name__ == "__main__":
 
     #compare()
     #compare_without_scaling()
-    compare_linear_small()
-
-
-#    benchmark(
-#        res, x0, jac, error, {"args": (1,y_true_1,alpha,lamb), "max_iter": 100, "tol": 1e-12}, title="bratu_h_"
-#    )
-#    
-#    
-#    y_true = A2 @ x_true + 0 * Dx1 @ x_true + 0 * np.exp(x_true)
-#    x0 = -1*jac(x0, 1, y_true, 0, 0).T @ y_true  # Note that jac is constant
-
-
-#    benchmark(
-#        res,
-#        x0,
-#        jac,
-#        error,
-#        {"args": (1, y_true, 0, 0), "max_iter": 100, "tol": 1e-12},
-#        title="bratu_linear_",
-#        additional_methods = [ref_cg]
-#    )
-
-
-#    benchmark(
-#        res,
-#        x0,
-#        jac,
-#        error,
-#        {"args": (1, y_true, 0, 0), "max_iter": 100, "tol": 1e-12},
-#        title="bratu_linear_25_",
-#        additional_methods = [ref_cg]
-#    )
+    #compare_manufactured_solution()
+    compare_linear()
+    #compare_linear_small()
 
 
