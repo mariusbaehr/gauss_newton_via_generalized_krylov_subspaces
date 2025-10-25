@@ -33,7 +33,7 @@ def linear_least_squares(A: npt.NDArray, y: npt.NDArray) -> npt.NDArray:
 
 
 def modified_gram_schmidt(
-    basis: npt.NDArray, vector: npt.NDArray, atol=1e-10
+    basis: npt.NDArray, vector: npt.NDArray, atol=1e-8
 ) -> npt.NDArray:  # TODO: Add tol
     """
     Orthonormalize vector with respect to orthonormal basis.
