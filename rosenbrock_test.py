@@ -20,7 +20,7 @@ p = 100  # N=2p-2, again not a classical regression model, however
 def res(x):
     block1 = 10 * (x[1:] - x[:-1] ** 2)
     block2 = 1 - x[:-1]
-    return 2**0.5*np.concatenate([block1, block2])
+    return 2**0.5 * np.concatenate([block1, block2])
 
 
 def jac(x):
@@ -28,7 +28,7 @@ def jac(x):
         x[:-1], shape=(p - 1, p)
     )
     block2 = -scipy.sparse.eye(p - 1, p, k=0)
-    return 2**0.5*scipy.sparse.block_array([[block1], [block2]])
+    return 2**0.5 * scipy.sparse.block_array([[block1], [block2]])
 
 
 x_exact = np.ones(p)
@@ -44,7 +44,9 @@ def compare_error_i():
 
     gn_data = benchmark_method(gauss_newton, res, x0, jac, error)
     gnk_data = benchmark_method(gauss_newton_krylow, res, x0, jac, error)
-    gnk_ii_data = benchmark_method(gauss_newton_krylow, res, x0, jac, error, kwargs = {"version":"res_new"})
+    gnk_ii_data = benchmark_method(
+        gauss_newton_krylow, res, x0, jac, error, kwargs={"version": "res_new"}
+    )
     ref_data = benchmark_method(ref_method, res, x0, jac, error)
 
     fig1, ax1 = plt.subplots(figsize=(8, 4), dpi=300)
@@ -60,26 +62,22 @@ def compare_error_i():
     ax4.set_xlabel("Iterationen")
     ax4.set_ylabel(r"Anzahl CG Iterationen pro Iteration")
 
+    ax1.semilogy(gn_data[0], "-x", label="gn")
+    ax1.semilogy(gnk_data[0], "-x", label="gnk")
+    ax1.semilogy(gnk_ii_data[0], "-x", label="gnk_ii")
+    ax1.semilogy(ref_data[0], "-x", label="ref")
 
-    ax1.semilogy(gn_data[0],"-x",label="gn")
-    ax1.semilogy(gnk_data[0],"-x",label="gnk")
-    ax1.semilogy(gnk_ii_data[0],"-x",label="gnk_ii")
-    ax1.semilogy(ref_data[0],"-x",label="ref")
+    ax2.semilogy(gn_data[1], "-x", label="gn")
+    ax2.semilogy(gnk_data[1], "-x", label="gnk")
+    ax2.semilogy(gnk_ii_data[1], "-x", label="gnk_ii")
+    ax2.semilogy(ref_data[1], "-x", label="ref")
 
+    ax3.plot(gn_data[2], "-x", label="gn")
+    ax3.plot(gnk_data[2], "-x", label="gnk")
+    ax3.plot(gnk_ii_data[2], "-x", label="gnk_ii")
+    ax3.plot(ref_data[2], "-x", label="ref")
 
-    ax2.semilogy(gn_data[1],"-x",label="gn")
-    ax2.semilogy(gnk_data[1],"-x",label="gnk")
-    ax2.semilogy(gnk_ii_data[1],"-x",label="gnk_ii")
-    ax2.semilogy(ref_data[1],"-x",label="ref")
-
-
-    ax3.plot(gn_data[2],"-x",label="gn")
-    ax3.plot(gnk_data[2],"-x",label="gnk")
-    ax3.plot(gnk_ii_data[2],"-x",label="gnk_ii")
-    ax3.plot(ref_data[2],"-x",label="ref")
-
-    ax4.plot(gn_data[3],"-x",label="gn")
-
+    ax4.plot(gn_data[3], "-x", label="gn")
 
     ax1.legend()
     ax2.legend()
@@ -93,18 +91,21 @@ def compare_error_ii():
 
     gn_data = benchmark_method(gauss_newton, res, x0, jac, error)
     gnk_data = benchmark_method(gauss_newton_krylow, res, x0, jac, error)
-    gnk_ii_data = benchmark_method(gauss_newton_krylow, res, x0, jac, error, kwargs = {"version":"res_new"})
+    gnk_ii_data = benchmark_method(
+        gauss_newton_krylow, res, x0, jac, error, kwargs={"version": "res_new"}
+    )
     ref_data = benchmark_method(ref_method, res, x0, jac, error)
 
-    plt.figure(figsize=(8,4), dpi =300)
-    plt.semilogy(gn_data[0],"-x",label="gn")
-    plt.semilogy(gnk_data[0],"-x",label="gnk")
-    plt.semilogy(gnk_ii_data[0],"-x",label="gnk_ii")
-    plt.semilogy(ref_data[0],"-x",label="ref")
+    plt.figure(figsize=(8, 4), dpi=300)
+    plt.semilogy(gn_data[0], "-x", label="gn")
+    plt.semilogy(gnk_data[0], "-x", label="gnk")
+    plt.semilogy(gnk_ii_data[0], "-x", label="gnk_ii")
+    plt.semilogy(ref_data[0], "-x", label="ref")
     plt.xlabel("Iterationen")
     plt.ylabel(r"Fehler $\log\|x_k-x^\ast\|$")
     plt.legend()
     plt.show()
+
 
 def compare_error_iii():
 
@@ -113,14 +114,16 @@ def compare_error_iii():
 
     gn_data = benchmark_method(gauss_newton, res, x0, jac, error)
     gnk_data = benchmark_method(gauss_newton_krylow, res, x0, jac, error)
-    gnk_ii_data = benchmark_method(gauss_newton_krylow, res, x0, jac, error, kwargs = {"version":"res_new"})
+    gnk_ii_data = benchmark_method(
+        gauss_newton_krylow, res, x0, jac, error, kwargs={"version": "res_new"}
+    )
     ref_data = benchmark_method(ref_method, res, x0, jac, error)
 
-    plt.figure(figsize=(8,4), dpi =300)
-    plt.semilogy(gn_data[0],"-x",label="gn")
-    plt.semilogy(gnk_data[0],"-x",label="gnk")
-    plt.semilogy(gnk_ii_data[0],"-x",label="gnk_ii")
-    plt.semilogy(ref_data[0],"-x",label="ref")
+    plt.figure(figsize=(8, 4), dpi=300)
+    plt.semilogy(gn_data[0], "-x", label="gn")
+    plt.semilogy(gnk_data[0], "-x", label="gnk")
+    plt.semilogy(gnk_ii_data[0], "-x", label="gnk_ii")
+    plt.semilogy(ref_data[0], "-x", label="ref")
     plt.xlabel("Iterationen")
     plt.ylabel(r"Fehler $\log\|x_k-x^\ast\|$")
     plt.legend()
@@ -132,4 +135,3 @@ if __name__ == "__main__":
     compare_error_i()
     compare_error_ii()
     compare_error_iii()
-

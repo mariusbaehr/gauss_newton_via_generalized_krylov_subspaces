@@ -42,7 +42,7 @@ def modified_gram_schmidt(
     ----------
     basis: Basis vectores are stored as colums.
     vector: Vector which should be orthogonalized.
-    atol: If ||vector||<atol, vector is considert linear depended of basis, hence method will stop there and raise GeneralizedKrylowSubspaceBreakdown Exception. 
+    atol: If ||vector||<atol, vector is considert linear depended of basis, hence method will stop there and raise GeneralizedKrylowSubspaceBreakdown Exception.
 
     Returns
     -------
@@ -67,6 +67,7 @@ def modified_gram_schmidt(
 class GeneralizedKrylowSubspaceBreakdown(Exception):
     pass  # TODO: Not shure if Error is apropriate, as it could naturaly happen
     # TODO: Maybe add error message here
+
 
 class GeneralizedKrylowSubspaceSpansEntireSpace(Exception):
     pass
@@ -228,17 +229,15 @@ def gauss_newton_krylow(
                 )  # TODO Check before hand
 
             x_coordinate = np.append(x_coordinate, 0)
-        except GeneralizedKrylowSubspaceBreakdown: #TODO warnings
+        except GeneralizedKrylowSubspaceBreakdown:  # TODO warnings
             pass
 
-        except GeneralizedKrylowSubspaceSpansEntireSpace: #TODO warnings
+        except GeneralizedKrylowSubspaceSpansEntireSpace:  # TODO warnings
             print(
                 f"Warning: The genearlized krylow subspace is now identical to the whole parameter space at iteration = {iter}"
             )
 
-        if (
-            iter % krylow_restart == 0
-        ):  
+        if iter % krylow_restart == 0:
             x_coordinate = krylow.start(krylow.x(x_coordinate))
 
     if not success:

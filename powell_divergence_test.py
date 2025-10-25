@@ -23,7 +23,7 @@ def jac(x, tau):
 
 
 def loss(x, tau):
-    return 1/2*np.sum(res(x, tau) ** 2)
+    return 1 / 2 * np.sum(res(x, tau) ** 2)
 
 
 x0 = np.array([1.0])
@@ -178,7 +178,7 @@ def error_list(x_list):
     return np.abs(x_exact - x_list)
 
 
-x_min = -0.2 # To see that 0 is local maximum
+x_min = -0.2  # To see that 0 is local maximum
 x_max = 0
 
 step_length_controls = [armijo_goldstein, no_step_length_control]

@@ -46,7 +46,7 @@ def armijo_goldstein(
 
         current_res = res(x + step_length * descent_direction, *args)
         current_loss: float = np.sum(current_res**2)
-        if prev_loss - current_loss >= 0.5*step_length * jac_dot_descent:
+        if prev_loss - current_loss >= 0.5 * step_length * jac_dot_descent:
             success = True
             break
         else:

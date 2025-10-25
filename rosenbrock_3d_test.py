@@ -20,7 +20,7 @@ p = 2
 def res(x):
     block1 = 10 * (x[1:] - x[:-1] ** 2)
     block2 = 1 - x[:-1]
-    return 2**0.5*np.concatenate([block1, block2])
+    return 2**0.5 * np.concatenate([block1, block2])
 
 
 x0 = np.array([-1.0, 1.0])
@@ -31,13 +31,13 @@ def jac(x):
         x[:-1], shape=(p - 1, p)
     )
     block2 = -scipy.sparse.eye(p - 1, p, k=0)
-    return 2**0.5*scipy.sparse.block_array(
-        [[block1], [block2]]
-    ).todense()  # todense() to ensure the classical gauss-newton method is used, with direct least squares solver.
+    return (
+        2**0.5 * scipy.sparse.block_array([[block1], [block2]]).todense()
+    )  # todense() to ensure the classical gauss-newton method is used, with direct least squares solver.
 
 
 def loss(x):
-    return 1/2*np.sum(res(x) ** 2)
+    return 1 / 2 * np.sum(res(x) ** 2)
 
 
 @np.vectorize
