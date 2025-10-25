@@ -10,9 +10,13 @@ import scipy
 
 
 def cg_least_squares(
-    A: sp.spmatrix, y: npt.NDArray, x0: npt.NDArray | None = None
+    A: sp.spmatrix, y: npt.NDArray, x0: npt.NDArray | None = None, cg_rtol = 1e-4, preconditioner = True
 ) -> Tuple[npt.NDArray, int]:
-    """ """
+    """ 
+    Iteratvie solver for least squares problem
+
+
+    """
     p = A.shape[1]
 
     ATA = scipy.sparse.linalg.LinearOperator((p, p), matvec=lambda x: A.T @ (A @ x))
@@ -23,8 +27,18 @@ def cg_least_squares(
     def cb_iter(x):
         global cg_iter
         cg_iter += 1
+    
 
-    x, _ = scipy.sparse.linalg.cg(ATA, A.T @ y, x0=x0, callback=cb_iter)
+    if not preconditioner:
+        x, _ = scipy.sparse.linalg.cg(ATA, A.T @ y, x0=x0, callback=cb_iter, rtol=cg_rtol)
+
+    jacobi_preconditioner = A.diagonal()
+    jacobi_preconditioner = jacobi_preconditioner**2
+    jacobi_preconditioner[np.abs(jacobi_preconditioner) < 1e-8] = 1
+    jacobi_preconditioner = 1/jacobi_preconditioner
+    jacobi_preconditioner = scipy.sparse.diags(jacobi_preconditioner)
+
+    x, _ = scipy.sparse.linalg.cg(ATA, A.T @ y, M=jacobi_preconditioner , x0=x0, callback=cb_iter, rtol=cg_rtol)
 
     return x, cg_iter
 
@@ -38,6 +52,7 @@ def gauss_newton(
     max_iter=100,
     step_length_control: Callable = armijo_goldstein,
     callback: Callable = lambda: None,
+    cg_preconditioner: bool = True,
 ) -> RegressionResult:
     """
     Gauss Newton algorithm for minimizing ||res(theta)|| with respect to theta.
@@ -76,7 +91,7 @@ def gauss_newton(
 
         if is_sparse:
             # descent_direction, _, cg_iter, *_ = scipy.sparse.linalg.lsqr( -1.0 * jac_ev, res_ev)
-            descent_direction, cg_iter = cg_least_squares(-1*jac_ev, res_ev, x)
+            descent_direction, cg_iter = cg_least_squares(-1*jac_ev, res_ev, x, preconditioner=cg_preconditioner)
         else:
             descent_direction, _, _, _ = scipy.linalg.lstsq(-1 * jac_ev, res_ev)
 
