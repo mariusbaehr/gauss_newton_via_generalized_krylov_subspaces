@@ -48,6 +48,10 @@ def compare_error_i():
         gauss_newton_krylow, res, x0, jac, error, kwargs={"version": "res_new"}
     )
     ref_data = benchmark_method(ref_method, res, x0, jac, error)
+    gn_no_preconditioner_data = benchmark_method(
+        gauss_newton, res, x0, jac, error, kwargs={"cg_preconditioner": False}
+    )
+
 
     fig1, ax1 = plt.subplots(figsize=(8, 4), dpi=300)
     ax1.set_xlabel("Iterationen")
@@ -78,11 +82,16 @@ def compare_error_i():
     ax3.plot(ref_data[2], "-x", label="ref")
 
     ax4.plot(gn_data[3], "-x", label="gn")
+    ax4.plot(gn_no_preconditioner_data[3], "-x", label="gn_noprec")
 
     ax1.legend()
     ax2.legend()
     ax3.legend()
     ax4.legend()
+    fig1.savefig("rosenbrock_i_error.pdf", bbox_inches="tight")
+    fig1.savefig("rosenbrock_i_loss.pdf", bbox_inches="tight")
+    fig1.savefig("rosenbrock_i_nfev.pdf", bbox_inches="tight")
+    fig1.savefig("rosenbrock_i_cg_iter.pdf", bbox_inches="tight")
     plt.show()
 
 
@@ -104,6 +113,7 @@ def compare_error_ii():
     plt.xlabel("Iterationen")
     plt.ylabel(r"Fehler $\log\|x_k-x^\ast\|$")
     plt.legend()
+    plt.savefig("rosenbrock_ii_error.pdf", bbox_inches="tight")
     plt.show()
 
 
@@ -127,6 +137,7 @@ def compare_error_iii():
     plt.xlabel("Iterationen")
     plt.ylabel(r"Fehler $\log\|x_k-x^\ast\|$")
     plt.legend()
+    plt.savefig("rosenbrock_iii_error.pdf", bbox_inches="tight")
     plt.show()
 
 
