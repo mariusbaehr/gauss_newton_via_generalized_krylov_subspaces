@@ -58,7 +58,7 @@ def compare_error_i():
     ax3.set_ylabel(r"Anzahl $f$ Auswertungen")
     fig4, ax4 = plt.subplots(figsize=(8, 4), dpi=300)
     ax4.set_xlabel("Iterationen")
-    ax4.set_ylabel(r"Anzahl CG-Iterationen")
+    ax4.set_ylabel(r"Anzahl CG Iterationen pro Iteration")
 
 
     ax1.semilogy(gn_data[0],"-x",label="gn")
