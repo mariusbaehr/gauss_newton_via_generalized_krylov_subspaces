@@ -38,7 +38,7 @@ def armijo_goldstein(
     step_length: float = step_length0
 
     prev_loss: float = np.sum(res_ev**2)
-    jac_dot_descent: float = np.sum((jac_ev @ descent_direction) ** 2) / 2
+    jac_dot_descent: float = np.sum((jac_ev @ descent_direction) ** 2)
     success: bool = False
     iter: int = 0
 
@@ -46,7 +46,7 @@ def armijo_goldstein(
 
         current_res = res(x + step_length * descent_direction, *args)
         current_loss: float = np.sum(current_res**2)
-        if prev_loss - current_loss >= step_length * jac_dot_descent:
+        if prev_loss - current_loss >= 0.5*step_length * jac_dot_descent:
             success = True
             break
         else:
@@ -54,6 +54,8 @@ def armijo_goldstein(
 
     if not success:
         print(
-            "Warning: The armijio_goldstein subroutine reached maximum iteration bound before principle was satisfied!"
+            "Warning: The armijio_goldstein subroutine reached maximum iteration bound before principle was satisfied! Step length will be set to zero!"
         )
+        step_length = 0
+
     return step_length, current_res, iter + 1
