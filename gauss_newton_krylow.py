@@ -230,7 +230,9 @@ def gauss_newton_krylow(
 
             x_coordinate = np.append(x_coordinate, 0)
         except GeneralizedKrylowSubspaceBreakdown:  # TODO warnings
-            pass
+            print(
+                f"Generalized krylow subspace breakdown at iteration = {iter}, basis.shape = {krylow.basis.shape}"
+            )
 
         except GeneralizedKrylowSubspaceSpansEntireSpace:  # TODO warnings
             print(
