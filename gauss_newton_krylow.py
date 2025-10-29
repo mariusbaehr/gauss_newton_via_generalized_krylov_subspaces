@@ -204,6 +204,7 @@ def gauss_newton_krylow(
                 "step_length": step_length,
                 "nfev": nfev,
                 "cg_iter": None,
+                "descent_direction" : descent_direction,
             },
         )
 
