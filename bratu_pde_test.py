@@ -16,40 +16,40 @@ plt.rcParams.update(
 )
 
 
-def make_problem(N, h=None, A=-3, B=3, u=lambda x1, x2: np.exp(-10 * (x1**2 + x2**2))):
+def make_problem(M, h=None, A=-3, B=3, u=lambda x1, x2: np.exp(-10 * (x1**2 + x2**2))):
     """
 
-    Notice that n=p=(N-1)*(N-1)
+    Notice that n=p=(M-1)*(M-1)
 
     """
 
     if h == None:
-        h = (B - A) / N
+        h = (B - A) / M
 
     A1 = scipy.sparse.diags_array(
-        (-np.ones(N - 2), 2 * np.ones(N - 1), -np.ones(N - 2)), offsets=(-1, 0, 1)
-    )  # shape (N-1,N-1)
+        (-np.ones(M - 2), 2 * np.ones(M - 1), -np.ones(M - 2)), offsets=(-1, 0, 1)
+    )  # shape (M-1,M-1)
 
-    A2 = scipy.sparse.kron(A1, scipy.sparse.eye(N - 1)) + scipy.sparse.kron(
-        scipy.sparse.eye(N - 1), A1
-    )  # shape ((N-1)**2,(N-1)**2)
+    A2 = scipy.sparse.kron(A1, scipy.sparse.eye(M - 1)) + scipy.sparse.kron(
+        scipy.sparse.eye(M - 1), A1
+    )  # shape ((M-1)**2,(M-1)**2)
 
     A2 *= h**-2
 
     Dx1 = scipy.sparse.kron(
-        scipy.sparse.diags_array((-np.ones(N - 1), np.ones(N - 2)), offsets=(0, 1)),
-        scipy.sparse.eye(N - 1),
-    )  # shape ((N-1)**2,(N-1)**2)
+        scipy.sparse.diags_array((-np.ones(M - 1), np.ones(M - 2)), offsets=(0, 1)),
+        scipy.sparse.eye(M - 1),
+    )  # shape ((M-1)**2,(M-1)**2)
 
     Dx1 *= h**-1
 
-    x1, x2 = np.meshgrid(np.linspace(A, B, N + 1)[1:-1], np.linspace(A, B, N + 1)[1:-1])
-    grid = np.meshgrid(np.linspace(A, B, N + 1)[1:-1], np.linspace(A, B, N + 1)[1:-1])
+    x1, x2 = np.meshgrid(np.linspace(A, B, M + 1)[1:-1], np.linspace(A, B, M + 1)[1:-1])
+    grid = np.meshgrid(np.linspace(A, B, M + 1)[1:-1], np.linspace(A, B, M + 1)[1:-1])
     x_true = u(x1, x2).flatten("F")
     x_true = u(*grid).flatten("F")
 
     return {
-        "N": N,
+        "M": M,
         "A": A,
         "B": B,
         "h": h,
@@ -82,11 +82,11 @@ def make_error(x_true):
 
 
 def compare():
-    N = 101
+    M = 101
     alpha = 5
     lamb = 10
 
-    problem = make_problem(N)
+    problem = make_problem(M)
     A2, Dx1, x_true = problem["A2"], problem["Dx1"], problem["x_true"]
 
     y = pde_operator(x_true, A2, Dx1, alpha, lamb)
@@ -135,11 +135,11 @@ def compare():
 
 
 def compare_without_scaling():
-    N = 101
+    M = 101
     alpha = 5
     lamb = 10
 
-    problem = make_problem(N, h=1)
+    problem = make_problem(M, h=1)
     A2, Dx1, x_true = problem["A2"], problem["Dx1"], problem["x_true"]
 
     y = pde_operator(x_true, A2, Dx1, alpha, lamb)
@@ -199,11 +199,11 @@ def compare_without_scaling():
 
 
 def compare_manufactured_solution():
-    N = 101
+    M = 101
     alpha = 5
     lamb = 10
 
-    problem = make_problem(N)
+    problem = make_problem(M)
     A2, Dx1, x_true, grid = (
         problem["A2"],
         problem["Dx1"],
@@ -254,12 +254,12 @@ def compare_manufactured_solution():
 
 
 def compare_linear():
-    N = 101
+    M = 101
     alpha = 5
     lamb = 0
 
-    problem = make_problem(N, h=None)
-    A2, Dx1, x_true, N = problem["A2"], problem["Dx1"], problem["x_true"], problem["N"]
+    problem = make_problem(M, h=None)
+    A2, Dx1, x_true, M = problem["A2"], problem["Dx1"], problem["x_true"], problem["M"]
 
     def cg_ref(res, x0, jac, args, callback):
         def cb_cg(x):
@@ -268,7 +268,7 @@ def compare_linear():
         def aTa(x):
             return (A2 + alpha * Dx1).T @ ((A2 + alpha * Dx1) @ x)
 
-        ATA = scipy.sparse.linalg.LinearOperator(((N - 1) ** 2, (N - 1) ** 2), aTa)
+        ATA = scipy.sparse.linalg.LinearOperator(((M - 1) ** 2, (M - 1) ** 2), aTa)
         scipy.sparse.linalg.cg(ATA, x0, callback=cb_cg)
 
     y = pde_operator(x_true, A2, Dx1, alpha, lamb)
@@ -276,7 +276,7 @@ def compare_linear():
     jac = make_jac(A2, Dx1, alpha, lamb)
     error = make_error(x_true)
 
-    x0 = -1 * jac(np.zeros((N - 1) ** 2)).T @ y  # Note that jac is constant
+    x0 = -1 * jac(np.zeros((M - 1) ** 2)).T @ y  # Note that jac is constant
 
     gn_data = benchmark_method(gauss_newton, res, x0, jac, error)
     gn_no_preconditioner_data = benchmark_method(
@@ -302,7 +302,7 @@ def compare_linear():
     plt.semilogy(gnk_data[0], "-x", label="gnk")
     plt.semilogy(gnk_ii_data[0], "-+", label="gnk_ii")
     plt.semilogy(ref_data[0], "-x", label="ref")
-    plt.semilogy(cg_data[0], "-x", label="cg")
+    plt.semilogy(cg_data[0], "-", label="cg")
     plt.xlabel("Iterationen")
     plt.ylabel(r"Fehler $\log\|x_k-x^\ast\|$")
     plt.legend()
@@ -332,12 +332,12 @@ def compare_linear():
 
 
 def compare_linear_small():
-    N = 25
+    M = 25
     alpha = 5
     lamb = 0
 
-    problem = make_problem(N)
-    A2, Dx1, x_true, N = problem["A2"], problem["Dx1"], problem["x_true"], problem["N"]
+    problem = make_problem(M)
+    A2, Dx1, x_true, M = problem["A2"], problem["Dx1"], problem["x_true"], problem["M"]
 
     def cg_ref(res, x0, jac, args, callback):
         def cb_cg(x):
@@ -346,7 +346,7 @@ def compare_linear_small():
         def aTa(x):
             return (A2 + alpha * Dx1).T @ ((A2 + alpha * Dx1) @ x)
 
-        ATA = scipy.sparse.linalg.LinearOperator(((N - 1) ** 2, (N - 1) ** 2), aTa)
+        ATA = scipy.sparse.linalg.LinearOperator(((M - 1) ** 2, (M - 1) ** 2), aTa)
         scipy.sparse.linalg.cg(ATA, x0, callback=cb_cg)
 
     y = pde_operator(x_true, A2, Dx1, alpha, lamb)
@@ -354,7 +354,7 @@ def compare_linear_small():
     jac = make_jac(A2, Dx1, alpha, lamb)
     error = make_error(x_true)
 
-    x0 = -1 * jac(np.zeros((N - 1) ** 2)).T @ y  # Note that jac is constant
+    x0 = -1 * jac(np.zeros((M - 1) ** 2)).T @ y  # Note that jac is constant
 
     gn_data = benchmark_method(gauss_newton, res, x0, jac, error)
     gnk_data = benchmark_method(
