@@ -77,5 +77,5 @@ x_array = np.array(x_list).T
 
 plt.plot(x_array[0], x_array[1], "o-k", label="gauss newton")
 
-plt.savefig("rosenbrock_3d.png", bbox_inches="tight")
+plt.savefig("rosenbrock_3d.pdf", bbox_inches="tight")
 plt.show()
