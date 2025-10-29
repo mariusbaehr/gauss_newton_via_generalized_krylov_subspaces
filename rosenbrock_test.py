@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from benchmark import benchmark_method, ref_method
 from gauss_newton import gauss_newton
 from gauss_newton_krylow import gauss_newton_krylow
+import statistics 
 
 plt.rcParams.update(
     {
@@ -14,7 +15,7 @@ plt.rcParams.update(
     }
 )
 
-p = 100  # N=2p-2, again not a classical regression model, however
+p = 1000  # N=2p-2, again not a classical regression model, however
 
 
 def res(x):
@@ -83,15 +84,17 @@ def compare_error_i():
 
     ax4.plot(gn_data[3], "-x", label="gn")
     ax4.plot(gn_no_preconditioner_data[3], "-x", label="gn_noprec")
+    print(f"Compare error i, mean cg iter = {statistics.mean(gn_data[3])}")
+    print(f"Compare error i, mean cg iter = {statistics.mean(gn_no_preconditioner_data[3])}")
 
     ax1.legend()
     ax2.legend()
     ax3.legend()
     ax4.legend()
     fig1.savefig("rosenbrock_i_error.pdf", bbox_inches="tight")
-    fig1.savefig("rosenbrock_i_loss.pdf", bbox_inches="tight")
-    fig1.savefig("rosenbrock_i_nfev.pdf", bbox_inches="tight")
-    fig1.savefig("rosenbrock_i_cg_iter.pdf", bbox_inches="tight")
+    fig2.savefig("rosenbrock_i_loss.pdf", bbox_inches="tight")
+    fig3.savefig("rosenbrock_i_nfev.pdf", bbox_inches="tight")
+    fig4.savefig("rosenbrock_i_cg.pdf", bbox_inches="tight")
     plt.show()
 
 
@@ -120,7 +123,7 @@ def compare_error_ii():
 def compare_error_iii():
 
     x0 = 2 * x_exact
-    x0[0] = 1
+    x0[2] = 1.99
 
     gn_data = benchmark_method(gauss_newton, res, x0, jac, error)
     gnk_data = benchmark_method(gauss_newton_krylow, res, x0, jac, error)
