@@ -94,8 +94,13 @@ def compare():
     jac = make_jac(A2, Dx1, alpha, lamb)
     error = make_error(x_true)
     x0 = x_true + 10**-1 * np.ones_like(x_true)
+    np.random.seed(42)
+    x0 = x_true + 0.1 * np.random.normal(loc=0, scale=1, size=len(x_true))
 
     gn_data = benchmark_method(gauss_newton, res, x0, jac, error)
+    gn_no_preconditioner_data = benchmark_method(
+        gauss_newton, res, x0, jac, error, kwargs={"cg_preconditioner": False}
+    )
     gnk_data = benchmark_method(
         gauss_newton_krylow, res, x0, jac, error, kwargs={"max_iter": 100}
     )
@@ -117,6 +122,15 @@ def compare():
     plt.xlabel("Iterationen")
     plt.ylabel(r"Fehler $\log\|x_k-x^\ast\|$")
     plt.legend()
+    plt.savefig("bratu_error.pdf", bbox_inches="tight")
+    plt.show()
+
+    plt.figure(figsize=(8, 4), dpi=300)
+    plt.plot(gn_data[3], "-x", label="gn")
+    plt.plot(gn_no_preconditioner_data[3], "-x", label="gn no prec")
+    plt.ylabel(r"CG Iterationen pro Iteration")
+    plt.legend()
+    plt.savefig("bratu_cg.pdf", bbox_inches="tight")
     plt.show()
 
 
@@ -132,9 +146,13 @@ def compare_without_scaling():
     res = make_res(y, A2, Dx1, alpha, lamb)
     jac = make_jac(A2, Dx1, alpha, lamb)
     error = make_error(x_true)
-    x0 = x_true + 10**-1 * np.ones_like(x_true)
+    np.random.seed(42)
+    x0 = x_true + 0.1 * np.random.normal(loc=0, scale=1, size=len(x_true))
 
     gn_data = benchmark_method(gauss_newton, res, x0, jac, error)
+    gn_no_preconditioner_data = benchmark_method(
+        gauss_newton, res, x0, jac, error, kwargs={"cg_preconditioner": False}
+    )
     gnk_data = benchmark_method(
         gauss_newton_krylow, res, x0, jac, error, kwargs={"max_iter": 100}
     )
@@ -156,7 +174,28 @@ def compare_without_scaling():
     plt.xlabel("Iterationen")
     plt.ylabel(r"Fehler $\log\|x_k-x^\ast\|$")
     plt.legend()
+    plt.savefig("bratu_without_scaling_error.pdf", bbox_inches="tight")
     plt.show()
+
+    plt.figure(figsize=(9, 4), dpi=300)
+    plt.plot(gn_data[2], "-x", label="gn")
+    plt.plot(gnk_data[2], "-x", label="gnk")
+    plt.plot(gnk_ii_data[2], "-+", label="gnk_ii")
+    plt.plot(ref_data[2], "-x", label="ref")
+    plt.xlabel("Iterationen")
+    plt.ylabel(r"Funktionsauswertungen")
+    plt.legend()
+    plt.savefig("bratu_without_scaling_nfev.pdf", bbox_inches="tight")
+    plt.show()
+
+    plt.figure(figsize=(8, 4), dpi=300)
+    plt.plot(gn_data[3], "-x", label="gn")
+    plt.plot(gn_no_preconditioner_data[3], "-x", label="gn no prec")
+    plt.ylabel(r"CG Iterationen pro Iteration")
+    plt.legend()
+    plt.savefig("bratu_without_scaling_cg.pdf", bbox_inches="tight")
+    plt.show()
+
 
 
 def compare_manufactured_solution():
@@ -186,7 +225,8 @@ def compare_manufactured_solution():
     res = make_res(y, A2, Dx1, alpha, lamb)
     jac = make_jac(A2, Dx1, alpha, lamb)
     error = make_error(x_true)
-    x0 = x_true + 10**-1 * np.ones_like(x_true)
+    np.random.seed(42)
+    x0 = x_true + 0.1 * np.random.normal(loc=0, scale=1, size=len(x_true))
 
     gn_data = benchmark_method(gauss_newton, res, x0, jac, error)
     gnk_data = benchmark_method(
@@ -256,6 +296,7 @@ def compare_linear():
     ref_data = benchmark_method(ref_method, res, x0, jac, error)
     cg_data = benchmark_method(cg_ref, res, x0, jac, error)
 
+
     plt.figure(figsize=(8, 4), dpi=300)
     plt.semilogy(gn_data[0], "-x", label="gn")
     plt.semilogy(gnk_data[0], "-x", label="gnk")
@@ -265,6 +306,7 @@ def compare_linear():
     plt.xlabel("Iterationen")
     plt.ylabel(r"Fehler $\log\|x_k-x^\ast\|$")
     plt.legend()
+    plt.savefig("bratu_linear_error.pdf", bbox_inches="tight")
     plt.show()
 
     plt.figure(figsize=(9, 4), dpi=300)
@@ -276,6 +318,7 @@ def compare_linear():
     plt.xlabel("Iterationen")
     plt.ylabel(r"Funktionsauswertungen")
     plt.legend()
+    plt.savefig("bratu_linear_loss.pdf", bbox_inches="tight")
     plt.show()
 
     plt.figure(figsize=(8, 4), dpi=300)
@@ -284,6 +327,7 @@ def compare_linear():
     plt.xlabel("Iterationen")
     plt.ylabel(r"CG Iterationen pro Iteration")
     plt.legend()
+    plt.savefig("bratu_linear_nfev.pdf", bbox_inches="tight")
     plt.show()
 
 
@@ -316,6 +360,9 @@ def compare_linear_small():
     gnk_data = benchmark_method(
         gauss_newton_krylow, res, x0, jac, error, kwargs={"max_iter": 100}
     )
+    gn_no_preconditioner_data = benchmark_method(
+        gauss_newton, res, x0, jac, error, kwargs={"cg_preconditioner": False}
+    )
     gnk_ii_data = benchmark_method(
         gauss_newton_krylow,
         res,
@@ -336,6 +383,7 @@ def compare_linear_small():
     plt.xlabel("Iterationen")
     plt.ylabel(r"Fehler $\log\|x_k-x^\ast\|$")
     plt.legend()
+    plt.savefig("bratu_linear_small_error.pdf", bbox_inches="tight")
     plt.show()
 
     plt.figure(figsize=(9, 4), dpi=300)
@@ -347,20 +395,23 @@ def compare_linear_small():
     plt.xlabel("Iterationen")
     plt.ylabel(r"Funktionsauswertungen")
     plt.legend()
+    plt.savefig("bratu_linear_small_loss.pdf", bbox_inches="tight")
     plt.show()
 
     plt.figure(figsize=(8, 4), dpi=300)
     plt.plot(gn_data[3], "-x", label="gn")
+    plt.plot(gn_no_preconditioner_data[1], "-x", label="gn")
     plt.xlabel("Iterationen")
     plt.ylabel(r"CG Iterationen pro Iteration")
     plt.legend()
+    plt.savefig("bratu_linear_small_cg_iter.pdf", bbox_inches="tight")
     plt.show()
 
 
 if __name__ == "__main__":
 
-    # compare()
-    # compare_without_scaling()
-    # compare_manufactured_solution()
+    #compare()
+    #compare_without_scaling()
+    #compare_manufactured_solution()
     compare_linear()
-    # compare_linear_small()
+    #compare_linear_small()
