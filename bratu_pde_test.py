@@ -298,6 +298,12 @@ def compare_linear():
     cg_data = benchmark_method(cg_ref, res, x0, jac, error)
 
 
+    def cb_for_breakdown(descent_direction):
+        print(f" gnk algorithm, norm(descent_direction) = {np.linalg.norm(descent_direction)}")
+
+    gauss_newton_krylow(res, x0, jac, callback=cb_for_breakdown)
+
+
     plt.figure(figsize=(8, 4), dpi=300)
     plt.semilogy(gn_data[0], "-x", label="gn")
     plt.semilogy(gnk_data[0], "-x", label="gnk")
@@ -373,7 +379,7 @@ def compare_linear_small():
         x0,
         jac,
         error,
-        kwargs={"version": "res_new", "max_iter": 100},
+        kwargs={"version": "res_new", "max_iter": 130},
     )
     ref_data = benchmark_method(ref_method, res, x0, jac, error)
     cg_data = benchmark_method(cg_ref, res, x0, jac, error)
@@ -399,16 +405,16 @@ def compare_linear_small():
     plt.xlabel("Iterationen")
     plt.ylabel(r"Funktionsauswertungen")
     plt.legend()
-    plt.savefig("bratu_linear_small_loss.pdf", bbox_inches="tight")
+    plt.savefig("bratu_linear_small_nfev.pdf", bbox_inches="tight")
     plt.show()
 
     plt.figure(figsize=(8, 4), dpi=300)
     plt.plot(gn_data[3], "-x", label="gn")
-    plt.plot(gn_no_preconditioner_data[1], "-x", label="gn")
+    plt.plot(gn_no_preconditioner_data[3], "-x", label="gn")
     plt.xlabel("Iterationen")
     plt.ylabel(r"CG Iterationen pro Iteration")
     plt.legend()
-    plt.savefig("bratu_linear_small_cg_iter.pdf", bbox_inches="tight")
+    plt.savefig("bratu_linear_small_cg.pdf", bbox_inches="tight")
     plt.show()
 
 
@@ -417,5 +423,5 @@ if __name__ == "__main__":
     #compare()
     #compare_without_scaling()
     #compare_manufactured_solution()
-    compare_linear()
-    #compare_linear_small()
+    #compare_linear()
+    compare_linear_small()
