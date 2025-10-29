@@ -5,6 +5,7 @@ from benchmark import benchmark_method, ref_method
 from gauss_newton import gauss_newton
 from gauss_newton_krylow import gauss_newton_krylow
 import matplotlib.pyplot as plt
+import statistics 
 
 plt.rcParams.update(
     {
@@ -318,7 +319,7 @@ def compare_linear():
     plt.xlabel("Iterationen")
     plt.ylabel(r"Funktionsauswertungen")
     plt.legend()
-    plt.savefig("bratu_linear_loss.pdf", bbox_inches="tight")
+    plt.savefig("bratu_linear_nfev.pdf", bbox_inches="tight")
     plt.show()
 
     plt.figure(figsize=(8, 4), dpi=300)
@@ -327,8 +328,11 @@ def compare_linear():
     plt.xlabel("Iterationen")
     plt.ylabel(r"CG Iterationen pro Iteration")
     plt.legend()
-    plt.savefig("bratu_linear_nfev.pdf", bbox_inches="tight")
+    plt.savefig("bratu_linear_cg.pdf", bbox_inches="tight")
     plt.show()
+
+    print(f"Compare linear, mean cg iter = {statistics.mean(gn_data[3])}")
+    print(f"Compare linear, mean cg iter = {statistics.mean(gn_no_preconditioner_data[3])}")
 
 
 def compare_linear_small():
