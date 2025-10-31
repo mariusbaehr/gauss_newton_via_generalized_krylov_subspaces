@@ -83,9 +83,9 @@ def compare_error_i():
     ax3.plot(ref_data[2], "-x", label="ref")
 
     ax4.plot(gn_data[3], "-x", label="gn")
-    ax4.plot(gn_no_preconditioner_data[3], "-x", label="gn_noprec")
+    #ax4.plot(gn_no_preconditioner_data[3], "-x", label="gn_noprec")
     print(f"Compare error i, mean cg iter = {statistics.mean(gn_data[3])}")
-    print(f"Compare error i, mean cg iter = {statistics.mean(gn_no_preconditioner_data[3])}")
+    #print(f"Compare error i, mean cg iter = {statistics.mean(gn_no_preconditioner_data[3])}")
 
     ax1.legend()
     ax2.legend()
