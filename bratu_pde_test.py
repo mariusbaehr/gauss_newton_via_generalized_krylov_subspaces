@@ -39,6 +39,8 @@ class BratuPdeProblem:
             grid_resolution: Optional[float] = None,
             u: Callable[[npt.NDArray,npt.NDArray],npt.NDArray] = default_u):
         self.grid_nodes = grid_nodes
+        self.ALPHA = ALPHA
+        self.LAMBDA = LAMBDA
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
         if grid_resolution == None:
@@ -68,29 +70,22 @@ class BratuPdeProblem:
 
         self.u_true = u(*self.grid).flatten("F")
 
+    def pde_operator(self,u:npt.NDArray):
+        if self.LAMBDA == 0:#To prevent overflow for the linear test case
+            return self.laplace2d @ u + self.ALPHA * self.partial_diff_x @ u
+        return self.laplace2d @ u + self.ALPHA * self.partial_diff_x @ u + self.LAMBDA * np.exp(u)
 
+    def make_res(self,y:npt.NDArray):
+        return lambda u: y - self.pde_operator(u)
 
+    def make_jac(self):
+        if self.LAMBDA == 0: #To prevent overflow for the linear test case
+            return lambda u: -1 * (self.laplace2d + self.ALPHA * self.partial_diff_x)
 
+        return lambda u: -1 * (self.laplace2d + self.ALPHA * self.partial_diff_x + self.LAMBDA * scipy.sparse.diags(np.exp(u)))
 
-def pde_operator(u, A2, Dx1, alpha, lamb):
-    if lamb == 0:#To prevent overflow for the linear test case
-        return A2 @ u + alpha * Dx1 @ u
-    return A2 @ u + alpha * Dx1 @ u + lamb * np.exp(u)
-
-
-def make_res(y, A2, Dx1, alpha, lamb):
-    return lambda u: y - pde_operator(u, A2, Dx1, alpha, lamb)
-
-
-def make_jac(A2, Dx1, alpha, lamb):
-    if lamb == 0: #To prevent overflow for the linear test case
-        return lambda u: -1 * (A2 + alpha * Dx1)
-
-    return lambda u: -1 * (A2 + alpha * Dx1 + lamb * scipy.sparse.diags(np.exp(u)))
-
-
-def make_error(u_true):
-    return lambda u: np.linalg.norm(u_true - u)
+    def make_error(self):
+        return lambda u: np.linalg.norm(self.u_true - u)
 
 
 def compare():
@@ -418,7 +413,7 @@ def compare_linear_small():
 if __name__ == "__main__":
 
     compare()
-    compare_without_scaling()
+    #compare_without_scaling()
     #compare_manufactured_solution()
-    compare_linear()
-    compare_linear_small()
+    #compare_linear()
+    #compare_linear_small()
