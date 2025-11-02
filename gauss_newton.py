@@ -143,4 +143,4 @@ def gauss_newton(
             "Warning: The gauss_newton algorithm reached maximal iteration bound before terminating!"
         )
 
-    return RegressionResult("gauss newton", x, success, nfev, iter, None, iter)
+    return RegressionResult("gauss newton", x, success, nfev, iter, iter)

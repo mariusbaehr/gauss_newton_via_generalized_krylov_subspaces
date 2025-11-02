@@ -248,5 +248,5 @@ def gauss_newton_krylow(
         )
 
     return RegressionResult(
-        "gauss newton krylow", krylow.x(x_coordinate), success, nfev, iter, None, iter
+        "gauss newton krylow", krylow.x(x_coordinate), success, nfev, iter, iter
     )
