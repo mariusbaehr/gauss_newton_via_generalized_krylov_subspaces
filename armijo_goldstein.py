@@ -13,29 +13,30 @@ def armijo_goldstein(
     args: Tuple,
     descent_direction: npt.NDArray,
     max_iter: int = 100,
-    step_length0: float = 1.0,
+    initial_step_length: float = 1.0,
 ) -> Tuple[float, npt.NDArray, int]:
     """
     Performs the Armijo Goldstein rule for determining a suitable step length.
 
     Parameters
     ----------
-    res:
-    x:
-    res_ev:
-    jac_ev:
-    descent_direction:
-    max_iter:
-    step_length0:
+    res: Residual funciton.
+    x: Current argument value.
+    res_ev: Evalueated residual at x.
+    jac_ev: Evaluated jacobian of the residual at x.
+    descent_direction: Descent direction.
+    max_iter: Maximum iteration count.
+    initial_step_length: Initial step size.
 
     Returns
     -------
-    step_lenth:
-    current_res:
+    step_lenth: The determined step length.
+    current_res: The residual evaluated at the point x + step_length * descent_direction.
+    iters: Number of iteration used.
 
     """
 
-    step_length: float = step_length0
+    step_length: float = initial_step_length
 
     prev_loss: float = np.sum(res_ev**2)
     jac_dot_descent: float = np.sum((jac_ev @ descent_direction) ** 2)

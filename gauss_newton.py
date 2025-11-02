@@ -25,7 +25,7 @@ def cg_least_squares(
     y: Vector.
     x0: Starting guess for the solution.
     cg_rtol: Tolerance for termination ||y-A@x||<= cg_rtol * ||y||
-    preconditioner: Use the jacobi preconditioner.
+    preconditioner: If preconditioner should be used.
 
     Returns
     -------
@@ -98,6 +98,7 @@ def gauss_newton(
 
     res_ev: npt.NDArray = res(x, *args)
     nfev: int = 1
+    njev: int = 0 #TODO
 
     for iter in range(1, max_iter):
 

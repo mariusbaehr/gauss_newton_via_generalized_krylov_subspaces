@@ -3,19 +3,17 @@ import numpy.typing as npt
 
 class RegressionResult:
     """
-    Representation, of the regression results
+    Representation, of the regression results.
 
     Attributes
     ----------
 
     method_name: Name of the method used.
     x: Solution for the regression parameters
-    success:
-    nrev:
-    full_njev:
-    njev: !!!!!!!FAlls nur jacobi mal vektor!!!
-    nit:
-
+    success: If algorithm was successfull.
+    nfev: Count of residual evaluations.
+    njev: Count of jacobian evaluations.
+    nit: Cout of iterations.
     """
 
     method_name: str
@@ -32,7 +30,6 @@ class RegressionResult:
         x: npt.NDArray,
         success: bool,
         nrev: int | None,
-        full_njev: int | None,
         njev: int | None,
         nit: int,
     ):
@@ -40,7 +37,6 @@ class RegressionResult:
         self.x = x
         self.success = success
         self.nrev = nrev
-        self.full_njev = full_njev
         self.njev = njev
         self.nit = nit
 

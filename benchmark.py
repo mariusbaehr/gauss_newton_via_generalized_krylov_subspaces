@@ -10,6 +10,12 @@ def ref_method(res, x0, jac, args, callback, **kwargs):
     scipy.optimize.least_squares(res, x0, jac, callback=cb_scipy, args=args)
 
 def reverse_accumulation(nfev_list: List) -> List:
+    """
+    The callback only gets the total, i.e. the accumulated count of residual evaluations,
+    however for our plots we wish to plot only the number of evaluations per step.
+    This funciton undoes that accumulation.
+
+    """
     if not (isinstance(nfev_list, list) and all(isinstance(x, int) for x in nfev_list)):
         return nfev_list 
     
