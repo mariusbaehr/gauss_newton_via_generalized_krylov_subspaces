@@ -9,16 +9,13 @@ def ref_method(res, x0, jac, args, callback, **kwargs):
 
     scipy.optimize.least_squares(res, x0, jac, callback=cb_scipy, args=args)
 
-def reverse_accumulation(nfev_list: List) -> List:
+def reverse_accumulation(nfev_list: List[int]) -> List[int]:
     """
     The callback only gets the total, i.e. the accumulated count of residual evaluations,
     however for our plots we wish to plot only the number of evaluations per step.
     This funciton undoes that accumulation.
 
     """
-    if not (isinstance(nfev_list, list) and all(isinstance(x, int) for x in nfev_list)):
-        return nfev_list 
-    
     if not nfev_list:
         return []
     
@@ -43,8 +40,10 @@ def benchmark_method(method, res, x0, jac, error, args=(), kwargs={}):
     def callback(x, nfev, cg_iter):
         error_list.append(error(x))
         loss_list.append(loss(x))
-        nfev_list.append(nfev)
-        cg_iter_list.append(cg_iter)
+        if nfev is not None:
+            nfev_list.append(nfev)
+        if cg_iter is not None:
+            cg_iter_list.append(cg_iter)
 
     method(res, x0, jac, args=args, callback=callback, **kwargs)
 
