@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from typing import Union, Any, Tuple
+from typing import Union, Any, Tuple, Optional
 from regression_result import RegressionResult
 from armijo_goldstein import armijo_goldstein
 from call_callback import call_callback
@@ -34,7 +34,7 @@ def linear_least_squares(A: npt.NDArray, y: npt.NDArray) -> npt.NDArray:
 
 def modified_gram_schmidt(
     basis: npt.NDArray, vector: npt.NDArray, atol=1e-8
-) -> npt.NDArray: 
+) -> npt.NDArray:
     """
     Orthonormalize vector with respect to orthonormal basis.
 
@@ -65,7 +65,7 @@ def modified_gram_schmidt(
 
 
 class GeneralizedKrylowSubspaceBreakdown(Exception):
-    pass  
+    pass
 
 
 class GeneralizedKrylowSubspaceSpansEntireSpace(Exception):
@@ -121,9 +121,7 @@ class GeneralizedKrylowSubspace:
         normal_res = -jac_ev.T @ res_ev
 
         try:
-            normal_res = modified_gram_schmidt(
-                self.basis, normal_res
-            )  
+            normal_res = modified_gram_schmidt(self.basis, normal_res)
         except GeneralizedKrylowSubspaceBreakdown:
             raise  # Exception will just be passed to gauss_newton_krylow
 
@@ -136,7 +134,7 @@ def gauss_newton_krylow(
     res: Callable[[npt.NDArray, Tuple[Any]], npt.NDArray],
     x0: npt.NDArray,
     jac: Callable[[npt.NDArray, Tuple[Any]], Union[npt.NDArray, sp.spmatrix]],
-    krylow_restart: int | None = None,
+    krylow_restart: Optional[int] = None,
     args: Tuple = (),
     tol: float = 1e-8,
     max_iter=100,
@@ -202,7 +200,7 @@ def gauss_newton_krylow(
                 "step_length": step_length,
                 "nfev": nfev,
                 "cg_iter": None,
-                "descent_direction" : descent_direction,
+                "descent_direction": descent_direction,
             },
         )
 
@@ -226,15 +224,15 @@ def gauss_newton_krylow(
             else:
                 raise ValueError(
                     "Variable version must be in ['res_old','res_new','jac_old_res_old','jac_old_res_new']"
-                ) 
+                )
 
             x_coordinate = np.append(x_coordinate, 0)
-        except GeneralizedKrylowSubspaceBreakdown:  
+        except GeneralizedKrylowSubspaceBreakdown:
             print(
                 f"Generalized krylow subspace breakdown at iteration = {iter}, basis.shape = {krylow.basis.shape}"
             )
 
-        except GeneralizedKrylowSubspaceSpansEntireSpace:  
+        except GeneralizedKrylowSubspaceSpansEntireSpace:
             print(
                 f"Warning: The genearlized krylow subspace is now identical to the whole parameter space at iteration = {iter}"
             )

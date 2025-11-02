@@ -9,6 +9,7 @@ def ref_method(res, x0, jac, args, callback, **kwargs):
 
     scipy.optimize.least_squares(res, x0, jac, callback=cb_scipy, args=args)
 
+
 def reverse_accumulation(nfev_list: List[int]) -> List[int]:
     """
     The callback only gets the total, i.e. the accumulated count of residual evaluations,
@@ -18,13 +19,11 @@ def reverse_accumulation(nfev_list: List[int]) -> List[int]:
     """
     if not nfev_list:
         return []
-    
+
     reversed_list = [nfev_list[0]] + [
         nfev_list[i] - nfev_list[i - 1] for i in range(1, len(nfev_list))
     ]
     return reversed_list
-
-
 
 
 def benchmark_method(method, res, x0, jac, error, args=(), kwargs={}):

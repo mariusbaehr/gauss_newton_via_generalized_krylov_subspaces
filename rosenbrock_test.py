@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from benchmark import benchmark_method, ref_method
 from gauss_newton import gauss_newton
 from gauss_newton_krylow import gauss_newton_krylow
-import statistics 
+import statistics
 
 plt.rcParams.update(
     {
@@ -52,7 +52,6 @@ def compare_error_i():
     gn_no_preconditioner_data = benchmark_method(
         gauss_newton, res, x0, jac, error, kwargs={"cg_preconditioner": False}
     )
-
 
     fig1, ax1 = plt.subplots(figsize=(8, 4), dpi=300)
     ax1.set_xlabel("Iterationen")

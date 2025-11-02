@@ -48,7 +48,9 @@ def cg_least_squares(
             ATA, A.T @ y, x0=x0, callback=cb_iter, rtol=cg_rtol
         )
 
-    jacobi_preconditioner = (A.T@A).diagonal() # Apparantly its possible to calculate this efficently but this would exceed the bachelor thesis
+    jacobi_preconditioner = (
+        A.T @ A
+    ).diagonal()  # Apparantly its possible to calculate this efficently but this would exceed the bachelor thesis
     jacobi_preconditioner = 1 / jacobi_preconditioner
     jacobi_preconditioner = scipy.sparse.diags(jacobi_preconditioner)
 
@@ -98,7 +100,7 @@ def gauss_newton(
 
     res_ev: npt.NDArray = res(x, *args)
     nfev: int = 1
-    njev: int = 0 
+    njev: int = 0
 
     for iter in range(1, max_iter):
 
