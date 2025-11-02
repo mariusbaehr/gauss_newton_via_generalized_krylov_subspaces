@@ -4,6 +4,8 @@ import sympy as sp
 from benchmark import benchmark_method, ref_method
 from gauss_newton import gauss_newton
 from gauss_newton_krylow import gauss_newton_krylow
+from typing import Optional, Callable
+import numpy.typing as npt
 import matplotlib.pyplot as plt
 import statistics 
 
@@ -19,46 +21,55 @@ plt.rcParams.update(
 def default_u(x1,x2):
     return np.exp(-10 * (x1**2 + x2**2))
 
-def make_problem(grid_nodes, grid_resolution=None, lower_bound=-3, upper_bound=3, u=default_u):
+class BratuPdeProblem:
+    """ 
+    Creates Bratu PDE problem instance, necessary because different starting values, parameters and grid_nodes are used.
+
+    Notice that n=p=(grid_nodes-1)*(grid_nodes-1).
     """
+    grid_nodes: int
 
-    Notice that n=p=(grid_nodes-1)*(grid_nodes-1)
+    def __init__(
+            self,
+            grid_nodes: int,
+            ALPHA: float,
+            LAMBDA: float,
+            lower_bound: float = -3.0,
+            upper_bound: float = 3.0,
+            grid_resolution: Optional[float] = None,
+            u: Callable[[npt.NDArray,npt.NDArray],npt.NDArray] = default_u):
+        self.grid_nodes = grid_nodes
+        self.lower_bound = lower_bound
+        self.upper_bound = upper_bound
+        if grid_resolution == None:
+            self.grid_resolution = (upper_bound - lower_bound) / grid_nodes
+        else:
+            self.grid_resolution = grid_resolution
+        self.u = u
+        
+        self.laplace1d = scipy.sparse.diags_array(
+            (-np.ones(grid_nodes - 2), 2 * np.ones(grid_nodes - 1), -np.ones(grid_nodes - 2)), offsets=(-1, 0, 1)
+        )  # shape (grid_nodes-1,grid_nodes-1)
 
-    """
+        self.laplace2d = scipy.sparse.kron(self.laplace1d, scipy.sparse.eye(grid_nodes - 1)) + scipy.sparse.kron(
+            scipy.sparse.eye(grid_nodes - 1), self.laplace1d 
+        )  # shape ((grid_nodes-1)**2,(grid_nodes-1)**2)
 
-    if grid_resolution == None:
-        grid_resolution = (upper_bound - lower_bound) / grid_nodes
+        self.laplace2d *= grid_resolution**-2
 
-    A1 = scipy.sparse.diags_array(
-        (-np.ones(grid_nodes - 2), 2 * np.ones(grid_nodes - 1), -np.ones(grid_nodes - 2)), offsets=(-1, 0, 1)
-    )  # shape (grid_nodes-1,grid_nodes-1)
+        self.partial_diff_x = scipy.sparse.kron(
+            scipy.sparse.diags_array((-np.ones(grid_nodes - 1), np.ones(grid_nodes - 2)), offsets=(0, 1)),
+            scipy.sparse.eye(grid_nodes - 1),
+        )  # shape ((grid_nodes-1)**2,(grid_nodes-1)**2)
 
-    A2 = scipy.sparse.kron(A1, scipy.sparse.eye(grid_nodes - 1)) + scipy.sparse.kron(
-        scipy.sparse.eye(grid_nodes - 1), A1
-    )  # shape ((grid_nodes-1)**2,(grid_nodes-1)**2)
+        self.partial_diff_x *= grid_resolution**-1
 
-    A2 *= grid_resolution**-2
+        self.grid = np.meshgrid(np.linspace(lower_bound, upper_bound, grid_nodes + 1)[1:-1], np.linspace(lower_bound, upper_bound, grid_nodes + 1)[1:-1])
 
-    Dx1 = scipy.sparse.kron(
-        scipy.sparse.diags_array((-np.ones(grid_nodes - 1), np.ones(grid_nodes - 2)), offsets=(0, 1)),
-        scipy.sparse.eye(grid_nodes - 1),
-    )  # shape ((grid_nodes-1)**2,(grid_nodes-1)**2)
+        self.u_true = u(*self.grid).flatten("F")
 
-    Dx1 *= grid_resolution**-1
 
-    grid = np.meshgrid(np.linspace(lower_bound, upper_bound, grid_nodes + 1)[1:-1], np.linspace(lower_bound, upper_bound, grid_nodes + 1)[1:-1])
-    u_true = u(*grid).flatten("F")
 
-    return {
-        "M": grid_nodes,
-        "A": lower_bound,
-        "B": upper_bound,
-        "h": grid_resolution,
-        "A2": A2,
-        "Dx1": Dx1,
-        "u_true": u_true,
-        "grid": grid,
-    }
 
 
 def pde_operator(u, A2, Dx1, alpha, lamb):
