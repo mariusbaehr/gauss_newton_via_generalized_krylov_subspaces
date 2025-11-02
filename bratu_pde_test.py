@@ -43,6 +43,8 @@ class BratuPdeProblem:
         self.LAMBDA = LAMBDA
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
+        
+        self.grid_resolution: float
         if grid_resolution == None:
             self.grid_resolution = (upper_bound - lower_bound) / grid_nodes
         else:
@@ -57,14 +59,14 @@ class BratuPdeProblem:
             scipy.sparse.eye(grid_nodes - 1), self.laplace1d 
         )  # shape ((grid_nodes-1)**2,(grid_nodes-1)**2)
 
-        self.laplace2d *= grid_resolution**-2
+        self.laplace2d *= self.grid_resolution**-2
 
         self.partial_diff_x = scipy.sparse.kron(
             scipy.sparse.diags_array((-np.ones(grid_nodes - 1), np.ones(grid_nodes - 2)), offsets=(0, 1)),
             scipy.sparse.eye(grid_nodes - 1),
         )  # shape ((grid_nodes-1)**2,(grid_nodes-1)**2)
 
-        self.partial_diff_x *= grid_resolution**-1
+        self.partial_diff_x *= self.grid_resolution**-1
 
         self.grid = np.meshgrid(np.linspace(lower_bound, upper_bound, grid_nodes + 1)[1:-1], np.linspace(lower_bound, upper_bound, grid_nodes + 1)[1:-1])
 
@@ -90,18 +92,18 @@ class BratuPdeProblem:
 
 def compare():
     grid_nodes = 101
-    alpha = 5
-    lamb = 10
+    ALPHA = 5
+    LAMBDA = 10
 
-    problem = make_problem(grid_nodes)
-    A2, Dx1, u_true = problem["A2"], problem["Dx1"], problem["u_true"]
+    bratu_pde = BratuPdeProblem(grid_nodes, ALPHA, LAMBDA)
 
-    y = pde_operator(u_true, A2, Dx1, alpha, lamb)
-    res = make_res(y, A2, Dx1, alpha, lamb)
-    jac = make_jac(A2, Dx1, alpha, lamb)
-    error = make_error(u_true)
+    y = bratu_pde.pde_operator(bratu_pde.u_true)
+    res = bratu_pde.make_res(y)
+    jac = bratu_pde.make_jac()
+    error = bratu_pde.make_error()
+
     np.random.seed(42)
-    u0 = u_true + 0.1 * np.random.normal(loc=0, scale=1, size=len(u_true))
+    u0 = bratu_pde.u_true + 0.1 * np.random.normal(loc=0, scale=1, size=len(bratu_pde.u_true))
 
     gn_data = benchmark_method(gauss_newton, res, u0, jac, error)
     gnk_data = benchmark_method(
@@ -141,18 +143,17 @@ def compare():
 
 def compare_without_scaling():
     grid_nodes = 101
-    alpha = 5
-    lamb = 10
+    ALPHA = 5
+    LAMBDA = 10
 
-    problem = make_problem(grid_nodes, grid_resolution=1)
-    A2, Dx1, u_true = problem["A2"], problem["Dx1"], problem["u_true"]
+    bratu_pde = BratuPdeProblem(grid_nodes, ALPHA, LAMBDA,grid_resolution = 1)
+    y = bratu_pde.pde_operator(bratu_pde.u_true)
+    res = bratu_pde.make_res(y)
+    jac = bratu_pde.make_jac()
+    error = bratu_pde.make_error()
 
-    y = pde_operator(u_true, A2, Dx1, alpha, lamb)
-    res = make_res(y, A2, Dx1, alpha, lamb)
-    jac = make_jac(A2, Dx1, alpha, lamb)
-    error = make_error(u_true)
     np.random.seed(42)
-    u0 = u_true + 0.1 * np.random.normal(loc=0, scale=1, size=len(u_true))
+    u0 = bratu_pde.u_true + 0.1 * np.random.normal(loc=0, scale=1, size=len(bratu_pde.u_true))
 
     gn_data = benchmark_method(gauss_newton, res, u0, jac, error)
     gnk_data = benchmark_method(
@@ -202,33 +203,28 @@ def compare_without_scaling():
 
 def compare_manufactured_solution():
     grid_nodes = 101
-    alpha = 5
-    lamb = 10
+    ALPHA = 5
+    LAMBDA = 10
 
-    problem = make_problem(grid_nodes)
-    A2, Dx1, u_true, grid = (
-        problem["A2"],
-        problem["Dx1"],
-        problem["u_true"],
-        problem["grid"],
-    )
+    bratu_pde = BratuPdeProblem(grid_nodes, ALPHA, LAMBDA)
 
     sp_x, sp_y = sp.symbols("sp_x sp_y")
     sp_u = sp.exp(-10 * (sp_x**2 + sp_y**2))
     sp_f = (
         -sp.diff(sp_u, sp_x, sp_x)
         - sp.diff(sp_u, sp_y, sp_y)
-        + alpha * sp.diff(sp_u, sp_x)
-        + lamb * sp.exp(sp_u)
+        + ALPHA * sp.diff(sp_u, sp_x)
+        + LAMBDA * sp.exp(sp_u)
     )
     lamb_f = sp.lambdify((sp_x, sp_y), sp_f)
-    y = lamb_f(*grid).flatten("F")
+    y = lamb_f(*bratu_pde.grid).flatten("F")
 
-    res = make_res(y, A2, Dx1, alpha, lamb)
-    jac = make_jac(A2, Dx1, alpha, lamb)
-    error = make_error(u_true)
+    res = bratu_pde.make_res(y)
+    jac = bratu_pde.make_jac()
+    error = bratu_pde.make_error()
+
     np.random.seed(42)
-    u0 = u_true + 0.1 * np.random.normal(loc=0, scale=1, size=len(u_true))
+    u0 = bratu_pde.u_true + 0.1 * np.random.normal(loc=0, scale=1, size=len(bratu_pde.u_true))
 
     gn_data = benchmark_method(gauss_newton, res, u0, jac, error)
     gnk_data = benchmark_method(
@@ -257,26 +253,25 @@ def compare_manufactured_solution():
 
 def compare_linear():
     grid_nodes = 101
-    alpha = 5
-    lamb = 0
+    ALPHA = 5
+    LAMBDA = 0
 
-    problem = make_problem(grid_nodes, grid_resolution=None)
-    A2, Dx1, u_true, grid_nodes = problem["A2"], problem["Dx1"], problem["u_true"], problem["M"]
+    bratu_pde = BratuPdeProblem(grid_nodes, ALPHA, LAMBDA)
+
+    y = bratu_pde.pde_operator(bratu_pde.u_true)
+    res = bratu_pde.make_res(y)
+    jac = bratu_pde.make_jac()
+    error = bratu_pde.make_error()
 
     def cg_ref(res, u0, jac, args, callback):
         def cb_cg(x):
             callback(x, None, None)
 
-        def aTa(x):
-            return (A2 + alpha * Dx1).T @ ((A2 + alpha * Dx1) @ x)
+        def aTa(u):
+            return (bratu_pde.laplace2d + bratu_pde.ALPHA * bratu_pde.partial_diff_x).T @ ((bratu_pde.laplace2d + ALPHA * bratu_pde.partial_diff_x) @ u)
 
         ATA = scipy.sparse.linalg.LinearOperator(((grid_nodes - 1) ** 2, (grid_nodes - 1) ** 2), aTa)
         scipy.sparse.linalg.cg(ATA, u0, callback=cb_cg)
-
-    y = pde_operator(u_true, A2, Dx1, alpha, lamb)
-    res = make_res(y, A2, Dx1, alpha, lamb)
-    jac = make_jac(A2, Dx1, alpha, lamb)
-    error = make_error(u_true)
 
     u0 = -1 * jac(np.zeros((grid_nodes - 1) ** 2)).T @ y  # Note that jac is constant
 
@@ -340,26 +335,25 @@ def compare_linear():
 
 def compare_linear_small():
     grid_nodes = 25
-    alpha = 5
-    lamb = 0
+    ALPHA = 5
+    LAMBDA = 0
 
-    problem = make_problem(grid_nodes)
-    A2, Dx1, u_true, grid_nodes = problem["A2"], problem["Dx1"], problem["u_true"], problem["M"]
+    bratu_pde = BratuPdeProblem(grid_nodes, ALPHA, LAMBDA)
+
+    y = bratu_pde.pde_operator(bratu_pde.u_true)
+    res = bratu_pde.make_res(y)
+    jac = bratu_pde.make_jac()
+    error = bratu_pde.make_error()
 
     def cg_ref(res, u0, jac, args, callback):
         def cb_cg(x):
             callback(x, None, None)
 
-        def aTa(x):
-            return (A2 + alpha * Dx1).T @ ((A2 + alpha * Dx1) @ x)
+        def aTa(u):
+            return (bratu_pde.laplace2d + bratu_pde.ALPHA * bratu_pde.partial_diff_x).T @ ((bratu_pde.laplace2d + ALPHA * bratu_pde.partial_diff_x) @ u)
 
         ATA = scipy.sparse.linalg.LinearOperator(((grid_nodes - 1) ** 2, (grid_nodes - 1) ** 2), aTa)
         scipy.sparse.linalg.cg(ATA, u0, callback=cb_cg)
-
-    y = pde_operator(u_true, A2, Dx1, alpha, lamb)
-    res = make_res(y, A2, Dx1, alpha, lamb)
-    jac = make_jac(A2, Dx1, alpha, lamb)
-    error = make_error(u_true)
 
     u0 = -1 * jac(np.zeros((grid_nodes - 1) ** 2)).T @ y  # Note that jac is constant
 
@@ -413,7 +407,7 @@ def compare_linear_small():
 if __name__ == "__main__":
 
     compare()
-    #compare_without_scaling()
+    compare_without_scaling()
     #compare_manufactured_solution()
-    #compare_linear()
-    #compare_linear_small()
+    compare_linear()
+    compare_linear_small()
