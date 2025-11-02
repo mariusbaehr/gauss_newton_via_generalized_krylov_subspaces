@@ -34,7 +34,7 @@ def linear_least_squares(A: npt.NDArray, y: npt.NDArray) -> npt.NDArray:
 
 def modified_gram_schmidt(
     basis: npt.NDArray, vector: npt.NDArray, atol=1e-8
-) -> npt.NDArray:  # TODO: Add tol
+) -> npt.NDArray: 
     """
     Orthonormalize vector with respect to orthonormal basis.
 
@@ -65,8 +65,7 @@ def modified_gram_schmidt(
 
 
 class GeneralizedKrylowSubspaceBreakdown(Exception):
-    pass  # TODO: Not shure if Error is apropriate, as it could naturaly happen
-    # TODO: Maybe add error message here
+    pass  
 
 
 class GeneralizedKrylowSubspaceSpansEntireSpace(Exception):
@@ -124,7 +123,7 @@ class GeneralizedKrylowSubspace:
         try:
             normal_res = modified_gram_schmidt(
                 self.basis, normal_res
-            )  # TODO: Determine if GKS breaks down based on modified gram schmidt process
+            )  
         except GeneralizedKrylowSubspaceBreakdown:
             raise  # Exception will just be passed to gauss_newton_krylow
 
@@ -227,15 +226,15 @@ def gauss_newton_krylow(
             else:
                 raise ValueError(
                     "Variable version must be in ['res_old','res_new','jac_old_res_old','jac_old_res_new']"
-                )  # TODO Check before hand
+                ) 
 
             x_coordinate = np.append(x_coordinate, 0)
-        except GeneralizedKrylowSubspaceBreakdown:  # TODO warnings
+        except GeneralizedKrylowSubspaceBreakdown:  
             print(
                 f"Generalized krylow subspace breakdown at iteration = {iter}, basis.shape = {krylow.basis.shape}"
             )
 
-        except GeneralizedKrylowSubspaceSpansEntireSpace:  # TODO warnings
+        except GeneralizedKrylowSubspaceSpansEntireSpace:  
             print(
                 f"Warning: The genearlized krylow subspace is now identical to the whole parameter space at iteration = {iter}"
             )

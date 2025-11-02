@@ -98,7 +98,7 @@ def gauss_newton(
 
     res_ev: npt.NDArray = res(x, *args)
     nfev: int = 1
-    njev: int = 0 #TODO
+    njev: int = 0 
 
     for iter in range(1, max_iter):
 
