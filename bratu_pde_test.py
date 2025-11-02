@@ -16,101 +16,101 @@ plt.rcParams.update(
     }
 )
 
+def default_u(x1,x2):
+    return np.exp(-10 * (x1**2 + x2**2))
 
-def make_problem(M, h=None, A=-3, B=3, u=lambda x1, x2: np.exp(-10 * (x1**2 + x2**2))):
+def make_problem(grid_nodes, grid_resolution=None, lower_bound=-3, upper_bound=3, u=default_u):
     """
 
-    Notice that n=p=(M-1)*(M-1)
+    Notice that n=p=(grid_nodes-1)*(grid_nodes-1)
 
     """
 
-    if h == None:
-        h = (B - A) / M
+    if grid_resolution == None:
+        grid_resolution = (upper_bound - lower_bound) / grid_nodes
 
     A1 = scipy.sparse.diags_array(
-        (-np.ones(M - 2), 2 * np.ones(M - 1), -np.ones(M - 2)), offsets=(-1, 0, 1)
-    )  # shape (M-1,M-1)
+        (-np.ones(grid_nodes - 2), 2 * np.ones(grid_nodes - 1), -np.ones(grid_nodes - 2)), offsets=(-1, 0, 1)
+    )  # shape (grid_nodes-1,grid_nodes-1)
 
-    A2 = scipy.sparse.kron(A1, scipy.sparse.eye(M - 1)) + scipy.sparse.kron(
-        scipy.sparse.eye(M - 1), A1
-    )  # shape ((M-1)**2,(M-1)**2)
+    A2 = scipy.sparse.kron(A1, scipy.sparse.eye(grid_nodes - 1)) + scipy.sparse.kron(
+        scipy.sparse.eye(grid_nodes - 1), A1
+    )  # shape ((grid_nodes-1)**2,(grid_nodes-1)**2)
 
-    A2 *= h**-2
+    A2 *= grid_resolution**-2
 
     Dx1 = scipy.sparse.kron(
-        scipy.sparse.diags_array((-np.ones(M - 1), np.ones(M - 2)), offsets=(0, 1)),
-        scipy.sparse.eye(M - 1),
-    )  # shape ((M-1)**2,(M-1)**2)
+        scipy.sparse.diags_array((-np.ones(grid_nodes - 1), np.ones(grid_nodes - 2)), offsets=(0, 1)),
+        scipy.sparse.eye(grid_nodes - 1),
+    )  # shape ((grid_nodes-1)**2,(grid_nodes-1)**2)
 
-    Dx1 *= h**-1
+    Dx1 *= grid_resolution**-1
 
-    x1, x2 = np.meshgrid(np.linspace(A, B, M + 1)[1:-1], np.linspace(A, B, M + 1)[1:-1])
-    grid = np.meshgrid(np.linspace(A, B, M + 1)[1:-1], np.linspace(A, B, M + 1)[1:-1])
-    x_true = u(x1, x2).flatten("F")
-    x_true = u(*grid).flatten("F")
+    grid = np.meshgrid(np.linspace(upper_bound, upper_bound, grid_nodes + 1)[1:-1], np.linspace(upper_bound, upper_bound, grid_nodes + 1)[1:-1])
+    u_true = u(*grid).flatten("F")
 
     return {
-        "M": M,
-        "A": A,
-        "B": B,
-        "h": h,
+        "M": grid_nodes,
+        "A": lower_bound,
+        "B": upper_bound,
+        "h": grid_resolution,
         "A2": A2,
         "Dx1": Dx1,
-        "x_true": x_true,
+        "u_true": u_true,
         "grid": grid,
     }
 
 
-def pde_operator(x, A2, Dx1, alpha, lamb):
+def pde_operator(u, A2, Dx1, alpha, lamb):
     if lamb == 0:
-        return A2 @ x + alpha * Dx1 @ x
-    return A2 @ x + alpha * Dx1 @ x + lamb * np.exp(x)
+        return A2 @ u + alpha * Dx1 @ u
+    return A2 @ u + alpha * Dx1 @ u + lamb * np.exp(u)
 
 
 def make_res(y, A2, Dx1, alpha, lamb):
-    return lambda x: y - pde_operator(x, A2, Dx1, alpha, lamb)
+    return lambda u: y - pde_operator(u, A2, Dx1, alpha, lamb)
 
 
 def make_jac(A2, Dx1, alpha, lamb):
-    if lamb == 0:
-        return lambda x: -1 * (A2 + alpha * Dx1)
+    if lamb == 0: #To prevent overflow for the linear test case
+        return lambda u: -1 * (A2 + alpha * Dx1)
 
-    return lambda x: -1 * (A2 + alpha * Dx1 + lamb * scipy.sparse.diags(np.exp(x)))
+    return lambda u: -1 * (A2 + alpha * Dx1 + lamb * scipy.sparse.diags(np.exp(u)))
 
 
-def make_error(x_true):
-    return lambda x: np.linalg.norm(x_true - x)
+def make_error(u_true):
+    return lambda u: np.linalg.norm(u_true - u)
 
 
 def compare():
-    M = 101
+    grid_nodes = 101
     alpha = 5
     lamb = 10
 
-    problem = make_problem(M)
-    A2, Dx1, x_true = problem["A2"], problem["Dx1"], problem["x_true"]
+    problem = make_problem(grid_nodes)
+    A2, Dx1, u_true = problem["A2"], problem["Dx1"], problem["u_true"]
 
-    y = pde_operator(x_true, A2, Dx1, alpha, lamb)
+    y = pde_operator(u_true, A2, Dx1, alpha, lamb)
     res = make_res(y, A2, Dx1, alpha, lamb)
     jac = make_jac(A2, Dx1, alpha, lamb)
-    error = make_error(x_true)
-    x0 = x_true + 10**-1 * np.ones_like(x_true)
+    error = make_error(u_true)
+    u0 = u_true + 10**-1 * np.ones_like(u_true)
     np.random.seed(42)
-    x0 = x_true + 0.1 * np.random.normal(loc=0, scale=1, size=len(x_true))
+    u0 = u_true + 0.1 * np.random.normal(loc=0, scale=1, size=len(u_true))
 
-    gn_data = benchmark_method(gauss_newton, res, x0, jac, error)
+    gn_data = benchmark_method(gauss_newton, res, u0, jac, error)
     gnk_data = benchmark_method(
-        gauss_newton_krylow, res, x0, jac, error, kwargs={"max_iter": 100}
+        gauss_newton_krylow, res, u0, jac, error, kwargs={"max_iter": 100}
     )
     gnk_ii_data = benchmark_method(
         gauss_newton_krylow,
         res,
-        x0,
+        u0,
         jac,
         error,
         kwargs={"version": "res_new", "max_iter": 100},
     )
-    ref_data = benchmark_method(ref_method, res, x0, jac, error)
+    ref_data = benchmark_method(ref_method, res, u0, jac, error)
 
     plt.figure(figsize=(8, 4), dpi=300)
     plt.semilogy(gn_data[0], "-s", label="Gauß-Newton")
@@ -118,7 +118,7 @@ def compare():
     plt.semilogy(gnk_ii_data[0], "-+", label="GNK-(II)")
     plt.semilogy(ref_data[0], ".-", label="Referenz")
     plt.xlabel("Iterationen")
-    plt.ylabel(r"Fehler $\log\|x_k-x^\ast\|$")
+    plt.ylabel(r"Fehler $\log\|u_k-u_h\|$")
     plt.legend()
     plt.savefig("bratu_error.pdf", bbox_inches="tight")
     plt.show()
@@ -135,33 +135,33 @@ def compare():
 
 
 def compare_without_scaling():
-    M = 101
+    grid_nodes = 101
     alpha = 5
     lamb = 10
 
-    problem = make_problem(M, h=1)
-    A2, Dx1, x_true = problem["A2"], problem["Dx1"], problem["x_true"]
+    problem = make_problem(grid_nodes, grid_resolution=1)
+    A2, Dx1, u_true = problem["A2"], problem["Dx1"], problem["u_true"]
 
-    y = pde_operator(x_true, A2, Dx1, alpha, lamb)
+    y = pde_operator(u_true, A2, Dx1, alpha, lamb)
     res = make_res(y, A2, Dx1, alpha, lamb)
     jac = make_jac(A2, Dx1, alpha, lamb)
-    error = make_error(x_true)
+    error = make_error(u_true)
     np.random.seed(42)
-    x0 = x_true + 0.1 * np.random.normal(loc=0, scale=1, size=len(x_true))
+    u0 = u_true + 0.1 * np.random.normal(loc=0, scale=1, size=len(u_true))
 
-    gn_data = benchmark_method(gauss_newton, res, x0, jac, error)
+    gn_data = benchmark_method(gauss_newton, res, u0, jac, error)
     gnk_data = benchmark_method(
-        gauss_newton_krylow, res, x0, jac, error, kwargs={"max_iter": 100}
+        gauss_newton_krylow, res, u0, jac, error, kwargs={"max_iter": 100}
     )
     gnk_ii_data = benchmark_method(
         gauss_newton_krylow,
         res,
-        x0,
+        u0,
         jac,
         error,
         kwargs={"version": "res_new", "max_iter": 100},
     )
-    ref_data = benchmark_method(ref_method, res, x0, jac, error)
+    ref_data = benchmark_method(ref_method, res, u0, jac, error)
 
     plt.figure(figsize=(8, 4), dpi=300)
     plt.semilogy(gn_data[0], "-s", label="Gauß-Newton")
@@ -169,7 +169,7 @@ def compare_without_scaling():
     plt.semilogy(gnk_ii_data[0], "-+", label="GNK-(II)")
     plt.semilogy(ref_data[0], ".-", label="Referenz")
     plt.xlabel("Iterationen")
-    plt.ylabel(r"Fehler $\log\|x_k-x^\ast\|$")
+    plt.ylabel(r"Fehler $\log\|u_k-u_h\|$")
     plt.legend()
     plt.savefig("bratu_without_scaling_error.pdf", bbox_inches="tight")
     plt.show()
@@ -196,15 +196,15 @@ def compare_without_scaling():
 
 
 def compare_manufactured_solution():
-    M = 101
+    grid_nodes = 101
     alpha = 5
     lamb = 10
 
-    problem = make_problem(M)
-    A2, Dx1, x_true, grid = (
+    problem = make_problem(grid_nodes)
+    A2, Dx1, u_true, grid = (
         problem["A2"],
         problem["Dx1"],
-        problem["x_true"],
+        problem["u_true"],
         problem["grid"],
     )
 
@@ -221,23 +221,23 @@ def compare_manufactured_solution():
 
     res = make_res(y, A2, Dx1, alpha, lamb)
     jac = make_jac(A2, Dx1, alpha, lamb)
-    error = make_error(x_true)
+    error = make_error(u_true)
     np.random.seed(42)
-    x0 = x_true + 0.1 * np.random.normal(loc=0, scale=1, size=len(x_true))
+    u0 = u_true + 0.1 * np.random.normal(loc=0, scale=1, size=len(u_true))
 
-    gn_data = benchmark_method(gauss_newton, res, x0, jac, error)
+    gn_data = benchmark_method(gauss_newton, res, u0, jac, error)
     gnk_data = benchmark_method(
-        gauss_newton_krylow, res, x0, jac, error, kwargs={"max_iter": 100}
+        gauss_newton_krylow, res, u0, jac, error, kwargs={"max_iter": 100}
     )
     gnk_ii_data = benchmark_method(
         gauss_newton_krylow,
         res,
-        x0,
+        u0,
         jac,
         error,
         kwargs={"version": "res_new", "max_iter": 100},
     )
-    ref_data = benchmark_method(ref_method, res, x0, jac, error)
+    ref_data = benchmark_method(ref_method, res, u0, jac, error)
 
     plt.figure(figsize=(8, 4), dpi=300)
     plt.semilogy(gn_data[0], "-s", label="Gauß-Newton")
@@ -245,56 +245,56 @@ def compare_manufactured_solution():
     plt.semilogy(gnk_ii_data[0], "-+", label="GNK-(II)")
     plt.semilogy(ref_data[0], ".-", label="Referenz")
     plt.xlabel("Iterationen")
-    plt.ylabel(r"Fehler $\log\|x_k-x^\ast\|$")
+    plt.ylabel(r"Fehler $\log\|u_k-u_h\|$")
     plt.legend()
     plt.show()
 
 
 def compare_linear():
-    M = 101
+    grid_nodes = 101
     alpha = 5
     lamb = 0
 
-    problem = make_problem(M, h=None)
-    A2, Dx1, x_true, M = problem["A2"], problem["Dx1"], problem["x_true"], problem["M"]
+    problem = make_problem(grid_nodes, grid_resolution=None)
+    A2, Dx1, u_true, grid_nodes = problem["A2"], problem["Dx1"], problem["u_true"], problem["M"]
 
-    def cg_ref(res, x0, jac, args, callback):
+    def cg_ref(res, u0, jac, args, callback):
         def cb_cg(x):
             callback(x, None, None)
 
         def aTa(x):
             return (A2 + alpha * Dx1).T @ ((A2 + alpha * Dx1) @ x)
 
-        ATA = scipy.sparse.linalg.LinearOperator(((M - 1) ** 2, (M - 1) ** 2), aTa)
-        scipy.sparse.linalg.cg(ATA, x0, callback=cb_cg)
+        ATA = scipy.sparse.linalg.LinearOperator(((grid_nodes - 1) ** 2, (grid_nodes - 1) ** 2), aTa)
+        scipy.sparse.linalg.cg(ATA, u0, callback=cb_cg)
 
-    y = pde_operator(x_true, A2, Dx1, alpha, lamb)
+    y = pde_operator(u_true, A2, Dx1, alpha, lamb)
     res = make_res(y, A2, Dx1, alpha, lamb)
     jac = make_jac(A2, Dx1, alpha, lamb)
-    error = make_error(x_true)
+    error = make_error(u_true)
 
-    x0 = -1 * jac(np.zeros((M - 1) ** 2)).T @ y  # Note that jac is constant
+    u0 = -1 * jac(np.zeros((grid_nodes - 1) ** 2)).T @ y  # Note that jac is constant
 
-    gn_data = benchmark_method(gauss_newton, res, x0, jac, error)
+    gn_data = benchmark_method(gauss_newton, res, u0, jac, error)
     gnk_data = benchmark_method(
-        gauss_newton_krylow, res, x0, jac, error, kwargs={"max_iter": 100}
+        gauss_newton_krylow, res, u0, jac, error, kwargs={"max_iter": 100}
     )
     gnk_ii_data = benchmark_method(
         gauss_newton_krylow,
         res,
-        x0,
+        u0,
         jac,
         error,
         kwargs={"version": "res_new", "max_iter": 100},
     )
-    ref_data = benchmark_method(ref_method, res, x0, jac, error)
-    cg_data = benchmark_method(cg_ref, res, x0, jac, error)
+    ref_data = benchmark_method(ref_method, res, u0, jac, error)
+    cg_data = benchmark_method(cg_ref, res, u0, jac, error)
 
 
     def cb_for_breakdown(descent_direction):
         print(f" gnk algorithm, norm(descent_direction) = {np.linalg.norm(descent_direction)}")
 
-    gauss_newton_krylow(res, x0, jac, callback=cb_for_breakdown)
+    gauss_newton_krylow(res, u0, jac, callback=cb_for_breakdown)
 
 
     plt.figure(figsize=(8, 4), dpi=300)
@@ -305,7 +305,7 @@ def compare_linear():
     plt.semilogy(cg_data[0][:100], "-", label="CG")
     print(f"Compare linear, count of cg iterations = {len(cg_data[0])}, final error = {cg_data[0][-1]}")
     plt.xlabel("Iterationen")
-    plt.ylabel(r"Fehler $\log\|x_k-x^\ast\|$")
+    plt.ylabel(r"Fehler $\log\|u_k-u_h\|$")
     plt.legend()
     plt.savefig("bratu_linear_error.pdf", bbox_inches="tight")
     plt.show()
@@ -334,44 +334,44 @@ def compare_linear():
 
 
 def compare_linear_small():
-    M = 25
+    grid_nodes = 25
     alpha = 5
     lamb = 0
 
-    problem = make_problem(M)
-    A2, Dx1, x_true, M = problem["A2"], problem["Dx1"], problem["x_true"], problem["M"]
+    problem = make_problem(grid_nodes)
+    A2, Dx1, u_true, grid_nodes = problem["A2"], problem["Dx1"], problem["u_true"], problem["M"]
 
-    def cg_ref(res, x0, jac, args, callback):
+    def cg_ref(res, u0, jac, args, callback):
         def cb_cg(x):
             callback(x, None, None)
 
         def aTa(x):
             return (A2 + alpha * Dx1).T @ ((A2 + alpha * Dx1) @ x)
 
-        ATA = scipy.sparse.linalg.LinearOperator(((M - 1) ** 2, (M - 1) ** 2), aTa)
-        scipy.sparse.linalg.cg(ATA, x0, callback=cb_cg)
+        ATA = scipy.sparse.linalg.LinearOperator(((grid_nodes - 1) ** 2, (grid_nodes - 1) ** 2), aTa)
+        scipy.sparse.linalg.cg(ATA, u0, callback=cb_cg)
 
-    y = pde_operator(x_true, A2, Dx1, alpha, lamb)
+    y = pde_operator(u_true, A2, Dx1, alpha, lamb)
     res = make_res(y, A2, Dx1, alpha, lamb)
     jac = make_jac(A2, Dx1, alpha, lamb)
-    error = make_error(x_true)
+    error = make_error(u_true)
 
-    x0 = -1 * jac(np.zeros((M - 1) ** 2)).T @ y  # Note that jac is constant
+    u0 = -1 * jac(np.zeros((grid_nodes - 1) ** 2)).T @ y  # Note that jac is constant
 
-    gn_data = benchmark_method(gauss_newton, res, x0, jac, error)
+    gn_data = benchmark_method(gauss_newton, res, u0, jac, error)
     gnk_data = benchmark_method(
-        gauss_newton_krylow, res, x0, jac, error, kwargs={"max_iter": 100}
+        gauss_newton_krylow, res, u0, jac, error, kwargs={"max_iter": 100}
     )
     gnk_ii_data = benchmark_method(
         gauss_newton_krylow,
         res,
-        x0,
+        u0,
         jac,
         error,
         kwargs={"version": "res_new", "max_iter": 200},
     )
-    ref_data = benchmark_method(ref_method, res, x0, jac, error)
-    cg_data = benchmark_method(cg_ref, res, x0, jac, error)
+    ref_data = benchmark_method(ref_method, res, u0, jac, error)
+    cg_data = benchmark_method(cg_ref, res, u0, jac, error)
 
     plt.figure(figsize=(8, 4), dpi=300)
     plt.semilogy(gn_data[0], "-s", label="Gauß-Newton")
@@ -380,7 +380,7 @@ def compare_linear_small():
     plt.semilogy(ref_data[0], ".-", label="Referenz")
     plt.semilogy(cg_data[0], "-", label="CG")
     plt.xlabel("Iterationen")
-    plt.ylabel(r"Fehler $\log\|x_k-x^\ast\|$")
+    plt.ylabel(r"Fehler $\log\|u_k-u_h\|$")
     plt.legend()
     plt.savefig("bratu_linear_small_error.pdf", bbox_inches="tight")
     plt.show()
