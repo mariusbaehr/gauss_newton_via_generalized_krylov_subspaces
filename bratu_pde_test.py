@@ -99,7 +99,6 @@ def compare():
     x0 = x_true + 0.1 * np.random.normal(loc=0, scale=1, size=len(x_true))
 
     gn_data = benchmark_method(gauss_newton, res, x0, jac, error)
-    #gn_no_preconditioner_data = benchmark_method( gauss_newton, res, x0, jac, error, kwargs={"cg_preconditioner": False})
     gnk_data = benchmark_method(
         gauss_newton_krylow, res, x0, jac, error, kwargs={"max_iter": 100}
     )
@@ -126,7 +125,6 @@ def compare():
 
     plt.figure(figsize=(8, 4), dpi=300)
     plt.plot(gn_data[3], "-s", label="Gauß-Newton")
-    #plt.plot(gn_no_preconditioner_data[3], "-x", label="gn no prec")
 
     print(f"Compare default, mean cg iter = {statistics.mean(gn_data[3])}")
 
@@ -152,7 +150,6 @@ def compare_without_scaling():
     x0 = x_true + 0.1 * np.random.normal(loc=0, scale=1, size=len(x_true))
 
     gn_data = benchmark_method(gauss_newton, res, x0, jac, error)
-    #gn_no_preconditioner_data = benchmark_method( gauss_newton, res, x0, jac, error, kwargs={"cg_preconditioner": False})
     gnk_data = benchmark_method(
         gauss_newton_krylow, res, x0, jac, error, kwargs={"max_iter": 100}
     )
@@ -191,7 +188,6 @@ def compare_without_scaling():
 
     plt.figure(figsize=(8, 4), dpi=300)
     plt.plot(gn_data[3], "-s", label="Gauß-Newton")
-    #plt.plot(gn_no_preconditioner_data[3], "-x", label="gn no prec")
     plt.ylabel(r"CG Iterationen pro Iteration")
     plt.legend()
     plt.savefig("bratu_without_scaling_cg.pdf", bbox_inches="tight")
@@ -280,7 +276,6 @@ def compare_linear():
     x0 = -1 * jac(np.zeros((M - 1) ** 2)).T @ y  # Note that jac is constant
 
     gn_data = benchmark_method(gauss_newton, res, x0, jac, error)
-    #gn_no_preconditioner_data = benchmark_method( gauss_newton, res, x0, jac, error, kwargs={"cg_preconditioner": False})
     gnk_data = benchmark_method(
         gauss_newton_krylow, res, x0, jac, error, kwargs={"max_iter": 100}
     )
@@ -329,7 +324,6 @@ def compare_linear():
 
     plt.figure(figsize=(8, 4), dpi=300)
     plt.plot(gn_data[3], "-s", label="Gauß-Newton")
-    #plt.plot(gn_no_preconditioner_data[3], "-x", label="gn no prec")
     plt.xlabel("Iterationen")
     plt.ylabel(r"CG Iterationen pro Iteration")
     plt.legend()
@@ -337,7 +331,6 @@ def compare_linear():
     plt.show()
 
     print(f"Compare linear, mean cg iter = {statistics.mean(gn_data[3])}")
-    #print(f"Compare linear, mean cg iter = {statistics.mean(gn_no_preconditioner_data[3])}")
 
 
 def compare_linear_small():
@@ -369,7 +362,6 @@ def compare_linear_small():
     gnk_data = benchmark_method(
         gauss_newton_krylow, res, x0, jac, error, kwargs={"max_iter": 100}
     )
-    #gn_no_preconditioner_data = benchmark_method( gauss_newton, res, x0, jac, error, kwargs={"cg_preconditioner": False})
     gnk_ii_data = benchmark_method(
         gauss_newton_krylow,
         res,
@@ -406,7 +398,6 @@ def compare_linear_small():
 
     plt.figure(figsize=(8, 4), dpi=300)
     plt.plot(gn_data[3], "-s", label="Gauß-Newton")
-    #plt.plot(gn_no_preconditioner_data[3], "-x", label="Gauß-Newton")
     plt.xlabel("Iterationen")
     plt.ylabel(r"CG Iterationen pro Iteration")
     plt.legend()

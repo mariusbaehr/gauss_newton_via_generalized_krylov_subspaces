@@ -183,7 +183,6 @@ def gauss_newton_krylow(
         jac_krylow = jac_ev @ krylow.basis
         res_ev = res_ev_new
 
-        # descent_direction, _, _, _ = scipy.linalg.lstsq(-1 * jac_krylow, res_ev)
         descent_direction = linear_least_squares(-1 * jac_krylow, res_ev)
 
         step_length, res_ev_new, nfev_delta = armijo_goldstein(

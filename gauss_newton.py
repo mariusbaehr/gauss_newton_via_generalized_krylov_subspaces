@@ -48,10 +48,7 @@ def cg_least_squares(
             ATA, A.T @ y, x0=x0, callback=cb_iter, rtol=cg_rtol
         )
 
-#    jacobi_preconditioner = A.diagonal()
-#    jacobi_preconditioner = jacobi_preconditioner**2
     jacobi_preconditioner = (A.T@A).diagonal() # Apparantly its possible to calculate this efficently but this would exceed the bachelor thesis
-#   jacobi_preconditioner[np.abs(jacobi_preconditioner) < 1e-8] = 1
     jacobi_preconditioner = 1 / jacobi_preconditioner
     jacobi_preconditioner = scipy.sparse.diags(jacobi_preconditioner)
 
