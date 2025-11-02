@@ -46,7 +46,7 @@ def make_problem(grid_nodes, grid_resolution=None, lower_bound=-3, upper_bound=3
 
     Dx1 *= grid_resolution**-1
 
-    grid = np.meshgrid(np.linspace(upper_bound, upper_bound, grid_nodes + 1)[1:-1], np.linspace(upper_bound, upper_bound, grid_nodes + 1)[1:-1])
+    grid = np.meshgrid(np.linspace(lower_bound, upper_bound, grid_nodes + 1)[1:-1], np.linspace(lower_bound, upper_bound, grid_nodes + 1)[1:-1])
     u_true = u(*grid).flatten("F")
 
     return {
@@ -62,7 +62,7 @@ def make_problem(grid_nodes, grid_resolution=None, lower_bound=-3, upper_bound=3
 
 
 def pde_operator(u, A2, Dx1, alpha, lamb):
-    if lamb == 0:
+    if lamb == 0:#To prevent overflow for the linear test case
         return A2 @ u + alpha * Dx1 @ u
     return A2 @ u + alpha * Dx1 @ u + lamb * np.exp(u)
 
@@ -94,7 +94,6 @@ def compare():
     res = make_res(y, A2, Dx1, alpha, lamb)
     jac = make_jac(A2, Dx1, alpha, lamb)
     error = make_error(u_true)
-    u0 = u_true + 10**-1 * np.ones_like(u_true)
     np.random.seed(42)
     u0 = u_true + 0.1 * np.random.normal(loc=0, scale=1, size=len(u_true))
 
