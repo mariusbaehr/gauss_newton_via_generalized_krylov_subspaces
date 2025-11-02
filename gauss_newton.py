@@ -104,6 +104,7 @@ def gauss_newton(
 
         # res_ev is updated in step_length control
         jac_ev: Union[npt.NDArray, sp.spmatrix] = jac(x, *args)
+        njev += 1
         is_sparse: bool = isinstance(jac_ev, (sp.sparray, sp.spmatrix))
 
         if is_sparse:
@@ -143,4 +144,4 @@ def gauss_newton(
             "Warning: The gauss_newton algorithm reached maximal iteration bound before terminating!"
         )
 
-    return RegressionResult("gauss newton", x, success, nfev, iter, iter)
+    return RegressionResult("gauss newton", x, success, nfev, njev, iter)

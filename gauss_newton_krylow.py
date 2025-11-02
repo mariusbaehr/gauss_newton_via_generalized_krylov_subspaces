@@ -173,7 +173,7 @@ def gauss_newton_krylow(
     res_ev_new: npt.NDArray = res_krylow(x_coordinate, *args)
     nfev: int = 1
     jac_ev: sp.spmatrix = jac(x0, *args)
-    njev: int = 1  # TODO: Use this instead of iter
+    njev: int = 1
 
     if krylow_restart == None:
         krylow_restart = max_iter
@@ -213,6 +213,7 @@ def gauss_newton_krylow(
 
         jac_ev_old = jac_ev
         jac_ev = krylow.evaluate(jac, x_coordinate, *args)
+        njev += 1
 
         try:
             if version == "res_old":
@@ -248,5 +249,5 @@ def gauss_newton_krylow(
         )
 
     return RegressionResult(
-        "gauss newton krylow", krylow.x(x_coordinate), success, nfev, iter, iter
+        "gauss newton krylow", krylow.x(x_coordinate), success, nfev, njev, iter
     )
