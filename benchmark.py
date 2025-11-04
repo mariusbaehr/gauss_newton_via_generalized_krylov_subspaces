@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.optimize
 from typing import List
-
+from armijo_goldstein import StepLengthConvergenceError
 
 def ref_method(res, x0, jac, args, callback, **kwargs):
     def cb_scipy(intermediate_result):
@@ -44,7 +44,10 @@ def benchmark_method(method, res, x0, jac, error, args=(), kwargs={}):
         if cg_iter is not None:
             cg_iter_list.append(cg_iter)
 
-    method(res, x0, jac, args=args, callback=callback, **kwargs)
+    try:
+        method(res, x0, jac, args=args, callback=callback, **kwargs)
+    except StepLengthConvergenceError as e:
+        print("Warning:", e.message)
 
     nfev_list = reverse_accumulation(nfev_list)
 
