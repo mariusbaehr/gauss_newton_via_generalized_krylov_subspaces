@@ -33,36 +33,6 @@ def linear_least_squares(A: npt.NDArray, y: npt.NDArray) -> npt.NDArray:
     return x
 
 
-def modified_gram_schmidt(
-    basis: npt.NDArray, vector: npt.NDArray, atol=1e-8
-) -> npt.NDArray:
-    """
-    Orthonormalize vector with respect to orthonormal basis.
-
-    Parameters
-    ----------
-    basis: Basis vectores are stored as colums.
-    vector: Vector which should be orthogonalized.
-    atol: If ||vector||<atol, vector is considert linear depended of basis, hence method will stop there and raise GeneralizedKrylowSubspaceBreakdown Exception.
-
-    Returns
-    -------
-    vector: Orthonormalized vector.
-    """
-    for column in basis.T:
-        column_dot_vector = np.dot(column, vector)
-
-        vector -= (column_dot_vector) * column
-
-    vector_norm = np.linalg.norm(vector)
-    if np.isclose(vector_norm, 0, atol=atol, rtol=0):
-        raise GeneralizedKrylowSubspaceBreakdown(
-            "Normal residual is allready inside generalized Krylow Subspcae, there for gauss newton krylow algorithm has to proceed without enlarging subspace."
-        )
-
-    vector /= vector_norm
-
-    return vector
 
 
 
@@ -128,18 +98,8 @@ def gauss_newton_krylow(
 
         x_coordinate += step_length * descent_direction
 
-        call_callback(
-            callback,
-            **{
-                "x": krylow.x(x_coordinate),
-                "iter": iter,
-                "jac": jac,
-                "step_length": step_length,
-                "nfev": nfev,
-                "cg_iter": None,
-                "descent_direction": descent_direction,
-            },
-        )
+        callback(x = krylow.x(x_coordinate), nfev = nfev, cg_iter = None)
+        
 
         if step_length**2 * np.sum(descent_direction**2) <= tol**2 * squared_sum_x_prev:
             success = True
