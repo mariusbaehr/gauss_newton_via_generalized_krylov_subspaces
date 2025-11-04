@@ -31,7 +31,7 @@ x0 = np.array([1.0])
 max_iter = 19
 
 
-def cb_x(x):
+def callback(x,nfev,cg_iter):
     global x_list
     x_list.append(x.copy())
 
@@ -94,7 +94,7 @@ for step_length_control, color, linestyle, marker in zip(
         jac,
         args=(tau,),
         max_iter=max_iter,
-        callback=cb_x,
+        callback=callback,
         step_length_control=step_length_control,
     )
     ax[0].scatter(
@@ -195,7 +195,7 @@ for step_length_control, color, linestyle, marker in zip(
         jac,
         args=(tau,),
         max_iter=max_iter,
-        callback=cb_x,
+        callback=callback,
         step_length_control=step_length_control,
     )
     ax[0].scatter(

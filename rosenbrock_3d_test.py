@@ -66,12 +66,12 @@ plt.ylabel(r"$x_2$")
 x_list = [x0]
 
 
-def cb_x(x):
+def callback(x,nfev,cg_iter):
     global error_list, loss_list
     x_list.append(x.copy())
 
 
-gauss_newton(res, x0, jac, callback=cb_x)
+gauss_newton(res, x0, jac, callback=callback)
 
 x_array = np.array(x_list).T
 
