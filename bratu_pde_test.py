@@ -229,13 +229,6 @@ def compare_linear():
     ref_data = benchmark_method(ref_method, res, u0, jac, error)
     cg_data = benchmark_method(cg_ref, res, u0, jac, error)
 
-    def cb_for_breakdown(descent_direction):
-        print(
-            f" gnk algorithm, norm(descent_direction) = {np.linalg.norm(descent_direction)}"
-        )
-
-    gauss_newton_krylow(res, u0, jac, callback=cb_for_breakdown)
-
     plt.figure(figsize=(8, 4), dpi=300)
     plt.semilogy(gn_data[0], "-s", label="Gauß-Newton")
     plt.semilogy(gnk_data[0], "-x", label="GNK")
