@@ -4,6 +4,13 @@ import numpy.typing as npt
 import scipy.sparse as sp
 import numpy as np
 
+class StepLengthConvergenceError(RuntimeError):
+    message: str
+
+    def __init__(self, message: str):
+        super().__init__(message)
+        self.message = message
+
 
 def armijo_goldstein(
     res: Callable[[npt.NDArray, Tuple[Any]], npt.NDArray],
@@ -54,9 +61,11 @@ def armijo_goldstein(
             step_length /= 2
 
     if not success:
-        print(
-            "Warning: The armijio_goldstein subroutine reached maximum iteration bound before principle was satisfied! Step length will be set to zero!"
+        raise StepLengthConvergenceError(
+            "The armijio_goldstein subroutine reached maximum iteration bound before principle was satisfied! Possible reasons:"
+            + "\n- The max iteration count is not big enough to allow for a sufficiently small step size"
+            + "\n- Or the descent direction is invalid."
+            + f"Norm of descent_direction ={np.linalg.norm(descent_direction)}."
         )
-        step_length = 0
 
     return step_length, current_res, iter + 1
