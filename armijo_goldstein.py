@@ -4,6 +4,7 @@ import numpy.typing as npt
 import scipy.sparse as sp
 import numpy as np
 
+
 class StepLengthConvergenceError(RuntimeError):
     message: str
 

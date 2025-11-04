@@ -61,7 +61,7 @@ class GeneralizedKrylowSubspace:
 
         normal_res = -jac_ev.T @ res_ev
 
-        normal_res -= self.basis @ (self.basis. T @ normal_res)
+        normal_res -= self.basis @ (self.basis.T @ normal_res)
 
         if np.allclose(normal_res, 0, atol=1e-8, rtol=0):
             raise GeneralizedKrylowSubspaceBreakdown(

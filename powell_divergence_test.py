@@ -31,7 +31,7 @@ x0 = np.array([1.0])
 max_iter = 19
 
 
-def callback(x,nfev,cg_iter):
+def callback(x, nfev, cg_iter):
     global x_list
     x_list.append(x.copy())
 

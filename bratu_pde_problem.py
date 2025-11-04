@@ -3,6 +3,7 @@ import scipy.sparse
 from typing import Optional, Callable
 import numpy.typing as npt
 
+
 def default_u(x1, x2):
     return np.exp(-10 * (x1**2 + x2**2))
 

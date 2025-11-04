@@ -124,8 +124,7 @@ def gauss_newton(
 
         x += step_length * descent_direction
 
-
-        callback(x = x, nfev = nfev, cg_iter = cg_iter)
+        callback(x=x, nfev=nfev, cg_iter=cg_iter)
 
         if step_length**2 * np.sum(descent_direction**2) <= tol**2 * squared_sum_x_prev:
             success = True

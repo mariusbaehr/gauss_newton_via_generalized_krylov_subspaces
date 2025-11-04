@@ -3,6 +3,7 @@ import scipy.optimize
 from typing import List
 from armijo_goldstein import StepLengthConvergenceError
 
+
 def ref_method(res, x0, jac, args, callback, **kwargs):
     def cb_scipy(intermediate_result):
         callback(intermediate_result.x, intermediate_result.nfev, None)

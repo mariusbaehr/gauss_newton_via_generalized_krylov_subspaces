@@ -2,7 +2,11 @@ from collections.abc import Callable
 from typing import Union, Any, Tuple, Optional
 from regression_result import RegressionResult
 from armijo_goldstein import armijo_goldstein
-from krylow import GeneralizedKrylowSubspaceBreakdown, GeneralizedKrylowSubspaceSpansEntireSpace, GeneralizedKrylowSubspace
+from krylow import (
+    GeneralizedKrylowSubspaceBreakdown,
+    GeneralizedKrylowSubspaceSpansEntireSpace,
+    GeneralizedKrylowSubspace,
+)
 import numpy as np
 import numpy.typing as npt
 import scipy.sparse as sp
@@ -93,8 +97,7 @@ def gauss_newton_krylow(
 
         x_coordinate += step_length * descent_direction
 
-        callback(x = krylow.x(x_coordinate), nfev = nfev, cg_iter = None)
-        
+        callback(x=krylow.x(x_coordinate), nfev=nfev, cg_iter=None)
 
         if step_length**2 * np.sum(descent_direction**2) <= tol**2 * squared_sum_x_prev:
             success = True

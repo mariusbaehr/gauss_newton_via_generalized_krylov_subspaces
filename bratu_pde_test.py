@@ -18,7 +18,6 @@ plt.rcParams.update(
 )
 
 
-
 def compare():
     grid_nodes = 101
     ALPHA = 5

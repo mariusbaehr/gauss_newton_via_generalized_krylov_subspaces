@@ -66,7 +66,7 @@ plt.ylabel(r"$x_2$")
 x_list = [x0]
 
 
-def callback(x,nfev,cg_iter):
+def callback(x, nfev, cg_iter):
     global error_list, loss_list
     x_list.append(x.copy())
 

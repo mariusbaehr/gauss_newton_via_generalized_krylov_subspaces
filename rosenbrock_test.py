@@ -16,7 +16,6 @@ plt.rcParams.update(
 )
 
 
-
 def compare_error_i():
     np.random.seed(42)
     x0 = x_exact + 0.1 * np.random.normal(loc=0, scale=1, size=parameter_count)

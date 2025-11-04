@@ -12,9 +12,9 @@ def res(x):
 
 
 def jac(x):
-    block1 = 10 * scipy.sparse.eye(parameter_count - 1, parameter_count, k=1) - 20 * scipy.sparse.diags(
-        x[:-1], shape=(parameter_count - 1, parameter_count)
-    )
+    block1 = 10 * scipy.sparse.eye(
+        parameter_count - 1, parameter_count, k=1
+    ) - 20 * scipy.sparse.diags(x[:-1], shape=(parameter_count - 1, parameter_count))
     block2 = -scipy.sparse.eye(parameter_count - 1, parameter_count, k=0)
     return 2**0.5 * scipy.sparse.block_array([[block1], [block2]])
 
@@ -24,4 +24,3 @@ x_exact = np.ones(parameter_count)
 
 def error(x):
     return np.linalg.norm(x - x_exact)
-
