@@ -2,7 +2,6 @@ from collections.abc import Callable
 from typing import Union, Any, Tuple
 from regression_result import RegressionResult
 from armijo_goldstein import armijo_goldstein
-from call_callback import call_callback
 import numpy as np
 import numpy.typing as npt
 import scipy.sparse as sp
