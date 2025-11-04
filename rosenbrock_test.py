@@ -1,10 +1,10 @@
-import numpy as np
-import scipy.sparse
 import matplotlib.pyplot as plt
+import numpy as np
+import statistics
+from rosenbrock_problem import error, res, jac, x_exact, parameter_count
 from benchmark import benchmark_method, ref_method
 from gauss_newton import gauss_newton
 from gauss_newton_krylow import gauss_newton_krylow
-import statistics
 
 plt.rcParams.update(
     {
@@ -15,33 +15,11 @@ plt.rcParams.update(
     }
 )
 
-p = 1000  # N=2p-2, again not a classical regression model, however
-
-
-def res(x):
-    block1 = 10 * (x[1:] - x[:-1] ** 2)
-    block2 = 1 - x[:-1]
-    return 2**0.5 * np.concatenate([block1, block2])
-
-
-def jac(x):
-    block1 = 10 * scipy.sparse.eye(p - 1, p, k=1) - 20 * scipy.sparse.diags(
-        x[:-1], shape=(p - 1, p)
-    )
-    block2 = -scipy.sparse.eye(p - 1, p, k=0)
-    return 2**0.5 * scipy.sparse.block_array([[block1], [block2]])
-
-
-x_exact = np.ones(p)
-
-
-def error(x):
-    return np.linalg.norm(x - x_exact)
 
 
 def compare_error_i():
     np.random.seed(42)
-    x0 = x_exact + 0.1 * np.random.normal(loc=0, scale=1, size=p)
+    x0 = x_exact + 0.1 * np.random.normal(loc=0, scale=1, size=parameter_count)
 
     gn_data = benchmark_method(gauss_newton, res, x0, jac, error)
     gnk_data = benchmark_method(gauss_newton_krylow, res, x0, jac, error)
