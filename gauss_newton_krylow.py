@@ -32,10 +32,6 @@ def linear_least_squares(A: npt.NDArray, y: npt.NDArray) -> npt.NDArray:
     return x
 
 
-
-
-
-
 def gauss_newton_krylow(
     res: Callable[[npt.NDArray, Tuple[Any]], npt.NDArray],
     x0: npt.NDArray,

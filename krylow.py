@@ -5,38 +5,6 @@ import numpy.typing as npt
 import scipy.sparse as sp
 
 
-def modified_gram_schmidt(
-    basis: npt.NDArray, vector: npt.NDArray, atol=1e-8
-) -> npt.NDArray:
-    """
-    Orthonormalize vector with respect to orthonormal basis.
-
-    Parameters
-    ----------
-    basis: Basis vectores are stored as colums.
-    vector: Vector which should be orthogonalized.
-    atol: If ||vector||<atol, vector is considert linear depended of basis, hence method will stop there and raise GeneralizedKrylowSubspaceBreakdown Exception.
-
-    Returns
-    -------
-    vector: Orthonormalized vector.
-    """
-    for column in basis.T:
-        column_dot_vector = np.dot(column, vector)
-
-        vector -= (column_dot_vector) * column
-
-    vector_norm = np.linalg.norm(vector)
-    if np.isclose(vector_norm, 0, atol=atol, rtol=0):
-        raise GeneralizedKrylowSubspaceBreakdown(
-            "Normal residual is allready inside generalized Krylow Subspcae, there for gauss newton krylow algorithm has to proceed without enlarging subspace."
-        )
-
-    vector /= vector_norm
-
-    return vector
-
-
 class GeneralizedKrylowSubspaceBreakdown(Exception):
     pass
 
@@ -75,14 +43,14 @@ class GeneralizedKrylowSubspace:
 
     def evaluate(
         self,
-        fun: Callable[[npt.NDArray, Tuple[Any]], Union[npt.NDArray, sp.spmatrix]],
+        function: Callable[[npt.NDArray, Tuple[Any]], Union[npt.NDArray, sp.spmatrix]],
         x_coordinate: npt.NDArray,
         *args: Any,
     ) -> Union[npt.NDArray, sp.spmatrix]:
         """
         For evaluating functions such as res or jac on the generalized krylow subspace.
         """
-        return fun(self.x(x_coordinate), *args)
+        return function(self.x(x_coordinate), *args)
 
     def update(
         self, jac_ev: Union[npt.NDArray, sp.spmatrix], res_ev: npt.NDArray
@@ -93,7 +61,12 @@ class GeneralizedKrylowSubspace:
 
         normal_res = -jac_ev.T @ res_ev
 
-        normal_res = modified_gram_schmidt(self.basis, normal_res)
+        normal_res -= self.basis @ (self.basis. T @ normal_res)
+
+        if np.allclose(normal_res, 0, atol=1e-8, rtol=0):
+            raise GeneralizedKrylowSubspaceBreakdown(
+                "Normal residual is allready inside generalized Krylow Subspcae, there for gauss newton krylow algorithm has to proceed without enlarging the subspace."
+            )
 
         normal_res /= np.linalg.norm(normal_res)
         normal_res = normal_res.reshape(-1, 1)
