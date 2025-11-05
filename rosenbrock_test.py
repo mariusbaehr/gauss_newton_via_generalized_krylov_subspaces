@@ -5,6 +5,7 @@ from rosenbrock_problem import error, res, jac, x_exact, parameter_count
 from benchmark import benchmark_method, ref_method
 from gauss_newton import gauss_newton
 from gauss_newton_krylow import gauss_newton_krylow
+import matplotlib.ticker as ticker
 
 plt.rcParams.update(
     {
@@ -36,7 +37,7 @@ def compare_error_i():
     fig2, ax2 = plt.subplots(figsize=(8, 4), dpi=300)
     ax2.set_xlabel("Iterationen")
     ax2.set_ylabel(r"Verlust $\log\mathcal{L}(x_k)$")
-    fig3, ax3 = plt.subplots(figsize=(8, 4), dpi=300)
+    fig3, ax3 = plt.subplots(figsize=(8, 3), dpi=300)
     ax3.set_xlabel("Iterationen")
     ax3.set_ylabel(r"Anzahl Residuums Auswertungen")
     fig4, ax4 = plt.subplots(figsize=(8, 4), dpi=300)
@@ -57,8 +58,10 @@ def compare_error_i():
     ax3.plot(gnk_data[2], "-x", label="GNK")
     ax3.plot(gnk_ii_data[2], "-+", label="GNK-(II)")
     ax3.plot(ref_data[2], ".-", label="Referenz")
+    ax3.yaxis.set_major_locator(ticker.MaxNLocator(integer=True))
 
     ax4.plot(gn_data[3], "-s", label="Gauß-Newton")
+    ax4.xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
     print(f"Compare error i, mean cg iter = {statistics.mean(gn_data[3])}")
 
     ax1.legend()

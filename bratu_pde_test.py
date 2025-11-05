@@ -7,6 +7,7 @@ from gauss_newton_krylow import gauss_newton_krylow
 from bratu_pde_problem import BratuPdeProblem
 import matplotlib.pyplot as plt
 import statistics
+import matplotlib.ticker as ticker
 
 plt.rcParams.update(
     {
@@ -62,6 +63,7 @@ def compare():
 
     plt.figure(figsize=(8, 4), dpi=300)
     plt.plot(gn_data[3], "-s", label="Gauß-Newton")
+    plt.gca().xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
 
     print(f"Compare default, mean cg iter = {statistics.mean(gn_data[3])}")
 
@@ -112,11 +114,12 @@ def compare_without_scaling():
     plt.savefig("bratu_without_scaling_error.pdf", bbox_inches="tight")
     plt.show()
 
-    plt.figure(figsize=(9, 4), dpi=300)
+    plt.figure(figsize=(9, 3), dpi=300)
     plt.plot(gn_data[2], "-s", label="Gauß-Newton")
     plt.plot(gnk_data[2], "-x", label="GNK")
     plt.plot(gnk_ii_data[2], "-+", label="GNK-(II)")
     plt.plot(ref_data[2], ".-", label="Referenz")
+    plt.gca().yaxis.set_major_locator(ticker.MaxNLocator(integer=True))
     plt.xlabel("Iterationen")
     plt.ylabel(r"Anzahl Residuums Auswertungen")
 
@@ -127,6 +130,7 @@ def compare_without_scaling():
     plt.figure(figsize=(8, 4), dpi=300)
     plt.plot(gn_data[3], "-s", label="Gauß-Newton")
     plt.ylabel(r"CG Iterationen pro Iteration")
+    plt.gca().xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
     plt.legend()
     plt.savefig("bratu_without_scaling_cg.pdf", bbox_inches="tight")
     plt.show()
@@ -243,12 +247,13 @@ def compare_linear():
     plt.savefig("bratu_linear_error.pdf", bbox_inches="tight")
     plt.show()
 
-    plt.figure(figsize=(9, 4), dpi=300)
+    plt.figure(figsize=(9, 3), dpi=300)
     plt.plot(gn_data[2], "-s", label="Gauß-Newton")
     plt.plot(gnk_data[2], "-x", label="GNK")
     plt.plot(gnk_ii_data[2], "-+", label="GNK-(II)")
     plt.plot(ref_data[2], ".-", label="Referenz")
     plt.plot(cg_data[2], "-", label="CG")
+    plt.gca().yaxis.set_major_locator(ticker.MaxNLocator(integer=True))
     plt.xlabel("Iterationen")
     plt.ylabel(r"Anzahl Residuums Auswertungen")
     plt.legend()
@@ -259,6 +264,7 @@ def compare_linear():
     plt.plot(gn_data[3], "-s", label="Gauß-Newton")
     plt.xlabel("Iterationen")
     plt.ylabel(r"CG Iterationen pro Iteration")
+    plt.gca().xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
     plt.legend()
     plt.savefig("bratu_linear_cg.pdf", bbox_inches="tight")
     plt.show()
@@ -321,11 +327,12 @@ def compare_linear_small():
     plt.savefig("bratu_linear_small_error.pdf", bbox_inches="tight")
     plt.show()
 
-    plt.figure(figsize=(9, 4), dpi=300)
+    plt.figure(figsize=(9, 3), dpi=300)
     plt.plot(gn_data[2], "-s", label="Gauß-Newton")
     plt.plot(gnk_data[2], "-x", label="GNK")
     plt.plot(gnk_ii_data[2], "-+", label="GNK-(II)")
     plt.plot(ref_data[2], ".-", label="Referenz")
+    plt.gca().yaxis.set_major_locator(ticker.MaxNLocator(integer=True))
     plt.xlabel("Iterationen")
     plt.ylabel(r"Anzahl Residuums Auswertungen")
     plt.legend()
@@ -336,6 +343,7 @@ def compare_linear_small():
     plt.plot(gn_data[3], "-s", label="Gauß-Newton")
     plt.xlabel("Iterationen")
     plt.ylabel(r"CG Iterationen pro Iteration")
+    plt.gca().xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
     plt.legend()
     plt.savefig("bratu_linear_small_cg.pdf", bbox_inches="tight")
     plt.show()
