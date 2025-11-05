@@ -1,5 +1,5 @@
 from gauss_newton import gauss_newton
-from armijo_goldstein import armijo_goldstein
+from armijo_goldstein import armijo_goldstein, StepLengthConvergenceError
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.ticker as ticker
@@ -88,15 +88,19 @@ for step_length_control, color, linestyle, marker in zip(
     step_length_controls, colors, linestyles, markers
 ):
     x_list = [x0]
-    gauss_newton(
-        res,
-        x0,
-        jac,
-        args=(tau,),
-        max_iter=max_iter,
-        callback=callback,
-        step_length_control=step_length_control,
-    )
+    try:
+        gauss_newton(
+            res,
+            x0,
+            jac,
+            args=(tau,),
+            max_iter=max_iter,
+            callback=callback,
+            step_length_control=step_length_control,
+        )
+    except StepLengthConvergenceError as e:
+        print("Warning:", e.message)
+
     ax[0].scatter(
         x_list, [loss(np.array([x]), tau) for x in x_list], marker=marker, color=color
     )
@@ -228,6 +232,7 @@ ax[1].set_xlabel("Iteration")
 ax[1].set_ylabel(r"Fehler $\log \|x_k-x^\ast\|$")
 ax[0].legend()
 ax[1].legend()
+ax[1].xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
 plt.tight_layout()
 plt.savefig("powell_convergence.pdf", bbox_inches="tight")
 plt.show()
