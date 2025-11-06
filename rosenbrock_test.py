@@ -54,13 +54,13 @@ def compare_error_i():
     ax2.semilogy(gnk_ii_data[1], "-+", label="GNK-(II)")
     ax2.semilogy(ref_data[1], ".-", label="Referenz")
 
-    ax3.plot(gn_data[2], "-s", label="Gauß-Newton")
-    ax3.plot(gnk_data[2], "-x", label="GNK")
-    ax3.plot(gnk_ii_data[2], "-+", label="GNK-(II)")
-    ax3.plot(ref_data[2], ".-", label="Referenz")
-    ax3.yaxis.set_major_locator(ticker.MaxNLocator(integer=True))
+    ax3.plot(range(1,len(gn_data[2])+1),gn_data[2], "-s", label="Gauß-Newton")
+    ax3.plot(range(1,len(gnk_data[2])+1),gnk_data[2] ,"-x", label="GNK")
+    ax3.plot(range(1,len(gnk_ii_data[2])+1),gnk_ii_data[2], "-+", label="GNK-(II)")
+    ax3.plot(range(1,len(ref_data[2])+1),ref_data[2], ".-", label="Referenz")
+    ax3.set_xticks([1,10,20,30,40,50])
 
-    ax4.plot(gn_data[3], "-s", label="Gauß-Newton")
+    ax4.plot(range(1,len(gn_data[3])+1),gn_data[3], "-s", label="Gauß-Newton")
     ax4.xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
     print(f"Compare error i, mean cg iter = {statistics.mean(gn_data[3])}")
 
