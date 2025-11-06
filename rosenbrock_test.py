@@ -58,6 +58,7 @@ def compare_error_i():
     ax3.plot(range(1,len(gnk_data[2])+1),gnk_data[2] ,"-x", label="GNK")
     ax3.plot(range(1,len(gnk_ii_data[2])+1),gnk_ii_data[2], "-+", label="GNK-(II)")
     ax3.plot(range(1,len(ref_data[2])+1),ref_data[2], ".-", label="Referenz")
+    ax3.yaxis.set_major_locator(ticker.MaxNLocator(integer=True))
     ax3.set_xticks([1,10,20,30,40,50])
 
     ax4.plot(range(1,len(gn_data[3])+1),gn_data[3], "-s", label="Gauß-Newton")
